@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eddie.project.cinemabookingsystemgenericdao.mapper.BookMapper">
+
+<!--    &lt;!&ndash; 定義 resultMap，確保 MyBatis 正確映射資料庫欄位與 Java 變數 &ndash;&gt;-->
+    <resultMap id="bookResultMap" type="eddie.project.cinemabookingsystemgenericdao.entity.Book">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="movieId" column="movie_id"/>
+        <result property="seatId" column="seat_id"/>
+        <result property="pay" column="pay"/>
+        <result property="bookTime" column="book_time"/>
+        <result property="payTime" column="pay_time"/>
+    </resultMap>
+    <resultMap id="OrderCountMap" type="eddie.project.cinemabookingsystemgenericdao.dto.book.OrderCount">
+        <result property="userId" column="user_id"/>
+        <result property="movieId" column="movie_id"/>
+        <result property="bookTime" column="book_time"/>
+        <result property="payTime" column="pay_time"/>
+        <result property="orderCount" column="order_count"/>
+    </resultMap>
+
+    <!-- 新增訂單 -->
+    <insert id="insertBook">
+        INSERT INTO books (user_id, movie_id, seat_id, pay, book_time, pay_time)
+        VALUES (#{userId}, #{movieId}, #{seatId}, #{pay}, #{bookTime}, #{payTime})
+    </insert>
+
+<!--    &lt;!&ndash; 用 id 查詢訂單 &ndash;&gt;-->
+    <select id="findById" parameterType="int" resultMap="bookResultMap">
+        SELECT * FROM books WHERE id=#{id}
+    </select>
+    <!--查詢全部訂單-->
+    <select id="findAll">
+        SELECT * FROM books
+    </select>
+
+    <!-- 根據 userId 查詢訂單 -->
+    <select id="findBookByUserId" resultMap="bookResultMap">
+        SELECT * FROM books WHERE user_id = #{userId}
+    </select>
+
+<!--    &lt;!&ndash; 查詢是否已付款的訂單 &ndash;&gt;-->
+    <select id="findByPaidStatus" resultMap="bookResultMap">
+        SELECT * FROM books WHERE pay = #{isPaid}
+    </select>
+
+<!--    &lt;!&ndash; 查詢指定日期範圍內的訂單 &ndash;&gt;-->
+    <select id="findBooksByDateRange" resultMap="bookResultMap">
+        SELECT * FROM books
+        WHERE book_time BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+<!--    &lt;!&ndash; 根據 movieId 查詢所有訂單 &ndash;&gt;-->
+    <select id="findBooksByMovieId" resultMap="bookResultMap">
+        SELECT * FROM books WHERE movie_id = #{movieId}
+    </select>
+
+<!--    &lt;!&ndash; 查詢並排序使用者的付費訂單數量 &ndash;&gt;-->
+
+    <select id="findBookPaidCountByUser" resultMap="OrderCountMap">
+        SELECT b.user_id, b.movie_id, b.book_time, b.pay_time
+        FROM books b
+        JOIN (
+        SELECT user_id, COUNT(*) AS paid_count
+        FROM books
+        WHERE pay = #{paid}   <!--這一行的功能是為了在撈取資料時排序 -->
+        GROUP BY user_id
+        ) t ON b.user_id = t.user_id
+        WHERE b.pay = #{paid}    <!-- ✅ 這裡也要過濾 paid，避免抓到不符合的資料 -->
+        ORDER BY t.paid_count DESC, b.user_id DESC;
+    </select>
+
+<!--    &lt;!&ndash; 查詢電影的訂單數量 &ndash;&gt;-->
+    <select id="findMovieOrderCount" resultMap="OrderCountMap">
+        SELECT movie_id, COUNT(*) AS order_count
+        FROM books
+        GROUP BY movie_id
+        ORDER BY order_count DESC
+    </select>
+
+<!--    &lt;!&ndash; 查詢電影的付費訂單數量 &ndash;&gt;-->
+    <select id="findMovieOrderPaidCount" resultType="OrderCount">
+        SELECT movie_id, COUNT(*) AS paid_order_count
+        FROM books
+        WHERE pay = #{paid}
+        GROUP BY movie_id
+        ORDER BY paid_order_count DESC
+    </select>
+
+<!--    &lt;!&ndash; 更新訂單 &ndash;&gt;-->
+    <update id="updateBook">
+        UPDATE books
+        SET user_id = #{userId}, movie_id = #{movieId}, seat_id = #{seatId}, pay = #{pay}, book_time = #{bookTime}, pay_time = #{payTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 刪除訂單 -->
+    <delete id="deleteBook">
+        DELETE FROM books WHERE id = #{id}
+    </delete>
+
+</mapper>
