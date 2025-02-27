@@ -1,4 +1,4 @@
-package eddie.project.cinemabookingsystemgenericdao;
+package eddie.project.cinemabookingsystemgenericdao.daoimpl;
 
 
 import eddie.project.cinemabookingsystemgenericdao.dao.MovieDao;

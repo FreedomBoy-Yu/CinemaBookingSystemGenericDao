@@ -1,7 +1,6 @@
-package eddie.project.cinemabookingsystemgenericdao;
+package eddie.project.cinemabookingsystemgenericdao.service;
 
 import eddie.project.cinemabookingsystemgenericdao.dto.user.UserSignInDTO;
-import eddie.project.cinemabookingsystemgenericdao.service.UserService;
 import eddie.project.cinemabookingsystemgenericdao.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +39,7 @@ public class UserServiceTest {
 
 //    @Test
 //    public void testUpdateUser() {
-//        userUpdateDTO userUpdateDTO = userService.findById(51);
+//        UserUpdateDTO userUpdateDTO = userService.findById(51);
 //        user.setName("joye");
 //        System.out.println(user+"\n");
 //        userService.updateUser(userUpdateDTO);
