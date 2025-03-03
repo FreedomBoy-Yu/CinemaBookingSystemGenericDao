@@ -11,5 +11,6 @@ public interface MovieMapper {
     void deleteMovieById(Movie movie);
     List<Movie> findAllMovie();
     Movie findMovieByName(String movieName);
+    Movie findMovieById(Integer movieId);
 
 }

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+
 @Getter
 @Setter
 public class Book{
@@ -11,17 +12,18 @@ public class Book{
     private Integer userId;
     private Integer movieId;
     private String seatId;
-    private Boolean pay;
+    private Integer status;
     private Date bookTime;
     private Date payTime;
+
     public Book() {}
 
-    public Book(Integer id, Integer userId, Integer movieId, String seatId, Boolean pay, Date bookTime, Date payTime) {
+    public Book(Integer id, Integer userId, Integer movieId, String seatId, Integer status, Date bookTime, Date payTime) {
         this.id = id;
         this.userId = userId;
         this.movieId = movieId;
         this.seatId = seatId;
-        this.pay = pay;
+        this.status = status;
         this.bookTime = bookTime;
         this.payTime = payTime;
     }

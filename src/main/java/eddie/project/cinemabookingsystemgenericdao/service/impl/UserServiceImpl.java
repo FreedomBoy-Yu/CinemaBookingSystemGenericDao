@@ -92,4 +92,10 @@ public class UserServiceImpl implements UserService {
     public UserJwtResponseDTO jwtTest(String token) {
         return jwtUtil.validateToken(token);
     }
+
+    @Override
+    public Integer jwtToUserId(String token) {
+        return jwtUtil.validateToken(token).getId();
+    }
+
 }

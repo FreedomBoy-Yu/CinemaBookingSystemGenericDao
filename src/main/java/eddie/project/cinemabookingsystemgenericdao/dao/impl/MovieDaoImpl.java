@@ -20,8 +20,8 @@ public class MovieDaoImpl implements MovieDao {
     }
 
     @Override
-    public Movie findById(Integer integer) {//R
-        return null;
+    public Movie findById(Integer id) {//R
+        return movieMapper.findMovieById(id);
     }
 
 

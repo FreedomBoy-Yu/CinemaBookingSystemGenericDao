@@ -19,6 +19,7 @@ public class BookDaoImpl implements BookDao {
     /********************************************************/
     @Override
     public void insert(Book book) {//test_ok
+        book.setBookTime(new Date());
         bookmapper.insertBook(book);
     }
     //read
@@ -37,8 +38,8 @@ public class BookDaoImpl implements BookDao {
         return bookmapper.findBookByUserId(id);
     }
     @Override
-    public List<Book> findByPaidStatus(boolean isPaid) {//test_ok
-        return bookmapper.findByPaidStatus(isPaid);
+    public List<Book> findByPaidStatus(Integer status) {//test_ok
+        return bookmapper.findByPaidStatus(status);
     }
     @Override
     public List<Book> findBooksByDateRange(Date startDate, Date endDate) {//test_ok
@@ -49,35 +50,38 @@ public class BookDaoImpl implements BookDao {
         return bookmapper.findBooksByMovieId(id);
     }
     @Override
-    public List<OrderCount> findBookPaidCountByUser(Boolean paid) {//test_ok
-        if(paid){
-            return bookmapper.findBookPaidCountByUser(1);
-        }else{
-            return bookmapper.findBookPaidCountByUser(0);
-        }
-
+    public List<OrderCount> findBookPaidCountByUser(Integer status) {//test_ok
+        return bookmapper.findBookPaidCountByUser(status);
     }
     @Override
-    public List<OrderCount> findMovieOrderCount(){//
+    public List<OrderCount> findMovieOrderCount(){//test_ok
         return bookmapper.findMovieOrderCount();
     }
     @Override
-    public List<OrderCount> findMovieOrderPaidCount(Boolean paid){
-        return bookmapper.findMovieOrderPaidCount(paid);
+    public List<OrderCount> findMovieOrderPaidCount(Integer status){//test_ok
+        return bookmapper.findMovieOrderPaidCount(status);
     }
 
+    @Override
+    public List<OrderCount> findMovieOrderPaidCountTimeRange(Integer status, Date startDate, Date endDate){
+        return bookmapper.findMovieOrderPaidCountTimeRange(status, startDate, endDate);
+    }
 
     /********************************************************/
-
+    @Override
+    public List<String> BookSeatCheck(Integer movieId){
+        return bookmapper.BookSeatCheck(movieId);
+    }
     //update
     @Override
     public void update(Book book) {
-
         bookmapper.updateBook(book);
+
     }
     //delete
     @Override
-    public void deleteById(Integer integer) {
-        //訂單紀錄不會刪除
+    public void deleteById(Integer id) {
+        bookmapper.deleteBook(id);
+        //訂單紀錄不會刪除,只是不會顯示於使用者端
     }
 }

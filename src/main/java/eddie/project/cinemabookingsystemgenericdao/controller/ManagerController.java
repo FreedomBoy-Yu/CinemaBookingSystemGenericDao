@@ -1,10 +1,11 @@
 package eddie.project.cinemabookingsystemgenericdao.controller;
 
 import eddie.project.cinemabookingsystemgenericdao.dto.movie.MovieDTO;
-import eddie.project.cinemabookingsystemgenericdao.entity.Movie;
+import eddie.project.cinemabookingsystemgenericdao.entity.Book;
 import eddie.project.cinemabookingsystemgenericdao.entity.User;
 import eddie.project.cinemabookingsystemgenericdao.service.MovieService;
 import eddie.project.cinemabookingsystemgenericdao.service.UserService;
+import eddie.project.cinemabookingsystemgenericdao.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +18,10 @@ public class ManagerController {
     private UserService userService;
     @Autowired
     private MovieService movieService;
+    @Autowired
+    private BookService bookService;
 
-    //從這裡
+    /***********************************************從這裡****************************************/
     @GetMapping("/users/allUserView")
     public List<User> getAllUsers() {
         return userService.findAll();
@@ -33,9 +36,9 @@ public class ManagerController {
     public void deleteUser(@PathVariable Integer id) {
         userService.deleteById(id);
     }
-    //當這裡是管理使用者的controller
+    /***********************************************當這裡是管理使用者的controller******************/
 
-    //從這裡
+    /***********************************************從這裡****************************************/
 
     @PostMapping("/movies/add")//增加一個新電影
     public void addMovie(@RequestBody MovieDTO movieDTO) {
@@ -51,9 +54,15 @@ public class ManagerController {
     public List<MovieDTO> getAllMovies() {
         return movieService.findAll();
     }
-    //到這裡是movie相關的設置controller
+    /***********************************************到這裡是movie相關設置的controller***************/
+    /***********************************************從這裡****************************************/
+    @GetMapping("/book/findAllBook")
+    public List<Book> findAllBook() {
+        return bookService.findAll();
+    }
 
 
+    /***********************************************到這裡是Booking相關的設置的controller***********/
     }
 
 

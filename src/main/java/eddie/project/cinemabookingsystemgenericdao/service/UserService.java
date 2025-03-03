@@ -18,5 +18,5 @@ public interface UserService {
     public void deleteById(Integer id);
     public String login(UserLoginDTO userLoginDto);
     public UserJwtResponseDTO jwtTest(String token);
-
+    public Integer jwtToUserId(String token);
 }

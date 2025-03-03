@@ -19,6 +19,10 @@
         VALUES (#{roomWay}, #{movieName}, #{bookAble})
     </insert>
 
+    <select id="findMovieById" resultType="eddie.project.cinemabookingsystemgenericdao.entity.Movie">
+        SELECT * FROM movie WHERE id=#{movieId}
+    </select>
+
     <update id="updateMovie" parameterType="eddie.project.cinemabookingsystemgenericdao.entity.Movie">
         UPDATE movie
         SET roomway = #{roomWay}, moviename = #{movieName}, bookable = #{bookAble}
