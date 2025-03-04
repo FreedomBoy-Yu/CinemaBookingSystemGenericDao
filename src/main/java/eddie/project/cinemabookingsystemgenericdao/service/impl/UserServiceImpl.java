@@ -5,11 +5,13 @@ import eddie.project.cinemabookingsystemgenericdao.dto.user.UserLoginDTO;
 import eddie.project.cinemabookingsystemgenericdao.dto.user.UserSignInDTO;
 import eddie.project.cinemabookingsystemgenericdao.dto.user.UserUpdateDTO;
 import eddie.project.cinemabookingsystemgenericdao.service.UserService;
-import eddie.project.cinemabookingsystemgenericdao.dao.DaoException;
 import eddie.project.cinemabookingsystemgenericdao.dao.UserDao;
 import eddie.project.cinemabookingsystemgenericdao.entity.User;
+import eddie.project.cinemabookingsystemgenericdao.exception.CustomNotFoundException;
+import eddie.project.cinemabookingsystemgenericdao.exception.DatabaseException;
 import eddie.project.cinemabookingsystemgenericdao.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,11 +35,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findById(Integer id) {
-        User user = userDao.findById(id);
-        if (user == null) {
-            throw new DaoException("User not found with id: " + id);
-        }
-        return user;
+        return Optional.ofNullable(userDao.findById(id))
+                .orElseThrow(() -> new CustomNotFoundException("找不到使用者 ID: " + id));
     }
 
     @Override
@@ -49,53 +48,71 @@ public class UserServiceImpl implements UserService {
         user.setPassword(userSignInDTO.getPassword());
         user.setName(userSignInDTO.getName());
         user.setRole(userSignInDTO.getRole());
-        userDao.insert(user);
+
+        try {
+            userDao.insert(user);
+        } catch (DataAccessException e) {
+            throw new DatabaseException("資料庫錯誤，無法新增使用者", e);
+        }
     }
 
     @Override
     public void updateUser(UserUpdateDTO userUpdateDTO) {
-        User user = userDao.findById(userUpdateDTO.getId());
+        User user = Optional.ofNullable(userDao.findById(userUpdateDTO.getId()))
+                .orElseThrow(() -> new CustomNotFoundException("找不到使用者 ID: " + userUpdateDTO.getId()));
 
-        // 使用 Optional.ofNullable() 來簡化 null 檢查
+        // ✅ 使用 Optional 避免 null
         Optional.ofNullable(userUpdateDTO.getPhone()).ifPresent(user::setPhone);
         Optional.ofNullable(userUpdateDTO.getEmail()).ifPresent(user::setEmail);
         Optional.ofNullable(userUpdateDTO.getPassword()).ifPresent(user::setPassword);
         Optional.ofNullable(userUpdateDTO.getName()).ifPresent(user::setName);
         Optional.ofNullable(userUpdateDTO.getRole()).ifPresent(user::setRole);
 
-        userDao.update(user);
+        try {
+            userDao.update(user);
+        } catch (DataAccessException e) {
+            throw new DatabaseException("資料庫錯誤，無法更新使用者", e);
+        }
     }
-
 
     @Override
     public void deleteById(Integer id) {
-        userDao.deleteById(id);
+        try {
+            userDao.deleteById(id);
+        } catch (DataAccessException e) {
+            throw new DatabaseException("資料庫錯誤，無法刪除使用者 ID: " + id, e);
+        }
     }
 
     // ✅ 登入方法，生成 JWT Token
     public String login(UserLoginDTO userLoginDto) {
-        User user = userDao.Login(userLoginDto.getAccount(), userLoginDto.getPassword());
+        User user = Optional.ofNullable(userDao.Login(userLoginDto.getAccount(), userLoginDto.getPassword()))
+                .orElseThrow(() -> new CustomNotFoundException("帳號或密碼錯誤"));
 
-        // ✅ 檢查 user 是否為 null，避免 NullPointerException
-        if (user == null) {
-            throw new DaoException("Invalid account or password");
-        }
-
-        // ✅ 簡化 UserJwtResponseDTO 的初始化
         UserJwtResponseDTO userJwtResponseDTO = new UserJwtResponseDTO(user.getId(), user.getAccount(), user.getRole());
 
-        // ✅ 產生 JWT Token
-        return jwtUtil.generateToken(userJwtResponseDTO);
+        try {
+            return jwtUtil.generateToken(userJwtResponseDTO);
+        } catch (Exception e) {
+            throw new RuntimeException("JWT 生成失敗", e);
+        }
     }
 
     @Override
     public UserJwtResponseDTO jwtTest(String token) {
-        return jwtUtil.validateToken(token);
+        try {
+            return jwtUtil.validateToken(token);
+        } catch (Exception e) {
+            throw new RuntimeException("JWT 驗證失敗", e);
+        }
     }
 
     @Override
     public Integer jwtToUserId(String token) {
-        return jwtUtil.validateToken(token).getId();
+        try {
+            return jwtUtil.validateToken(token).getId();
+        } catch (Exception e) {
+            throw new RuntimeException("JWT 解析失敗", e);
+        }
     }
-
 }

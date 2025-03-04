@@ -3,12 +3,17 @@ package eddie.project.cinemabookingsystemgenericdao.service.impl;
 import eddie.project.cinemabookingsystemgenericdao.dao.MovieDao;
 import eddie.project.cinemabookingsystemgenericdao.dto.movie.MovieDTO;
 import eddie.project.cinemabookingsystemgenericdao.entity.Movie;
+import eddie.project.cinemabookingsystemgenericdao.exception.CustomNotFoundException;
+import eddie.project.cinemabookingsystemgenericdao.exception.DatabaseException;
 import eddie.project.cinemabookingsystemgenericdao.service.MovieService;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 //商業邏輯
 @Service
 public class MovieServiceImpl implements MovieService {
@@ -22,7 +27,12 @@ public class MovieServiceImpl implements MovieService {
         movie.setMovieName(movieDTO.getMovieName());
         movie.setRoomWay(movieDTO.getRoomWay());
         movie.setBookAble(movieDTO.getBookAble());
-        movieDao.insert(movie);
+        try {
+            movieDao.insert(movie);
+        }catch(PersistenceException e){
+            throw new DatabaseException("資料庫錯誤，新增電影", e);
+
+        }
     }
 
     @Override
@@ -40,15 +50,25 @@ public class MovieServiceImpl implements MovieService {
     }
 
 
+//    @Override
+//    public MovieDTO findByMovieName(String movieName) {
+//        Movie movie=movieDao.findByMovieName(movieName);
+//        MovieDTO movieDTO = new MovieDTO(movie.getMovieName(),movie.getRoomWay(),movie.getBookAble());
+////        movieDTO.setMovieName();
+////        movieDTO.setRoomWay();
+////        movieDTO.setBookable();
+//        return movieDTO;
+//    }
+/*以下方法是GPT建議的做法*/
     @Override
     public MovieDTO findByMovieName(String movieName) {
-        Movie movie=movieDao.findByMovieName(movieName);
-        MovieDTO movieDTO = new MovieDTO(movie.getMovieName(),movie.getRoomWay(),movie.getBookAble());
-//        movieDTO.setMovieName();
-//        movieDTO.setRoomWay();
-//        movieDTO.setBookable();
-        return movieDTO;
+        // ✅ 避免 `null` 問題，若找不到電影，拋出 `CustomNotFoundException`
+        Movie movie = Optional.ofNullable(movieDao.findByMovieName(movieName))
+                .orElseThrow(() -> new CustomNotFoundException("找不到電影名稱：" + movieName));
+
+        return new MovieDTO(movie.getMovieName(), movie.getRoomWay(), movie.getBookAble());
     }
+    /*以下方法是GPT建議的做法*/
 
     @Override
     public void updateMovie(MovieDTO movieDTO) {
@@ -57,6 +77,10 @@ public class MovieServiceImpl implements MovieService {
         movie.setMovieName(movieDTO.getMovieName());
         movie.setRoomWay(movieDTO.getRoomWay());
         movie.setBookAble(movieDTO.getBookAble());
-        movieDao.update(movie);
+        try {
+            movieDao.update(movie);
+        }catch(PersistenceException e){
+            throw new DatabaseException("資料庫錯誤，更新電影失敗", e);
+        }
     }
 }

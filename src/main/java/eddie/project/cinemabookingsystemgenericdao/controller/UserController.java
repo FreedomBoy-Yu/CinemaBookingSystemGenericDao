@@ -55,6 +55,10 @@ public class UserController {
     public List<MovieDTO> findAllMovie() {
         return movieService.findAll();
     }
+    @GetMapping("/movie/findbyname")
+    public MovieDTO findByMovieName(@RequestParam("name") String name) {
+        return movieService.findByMovieName(name);
+    }
 
 
 

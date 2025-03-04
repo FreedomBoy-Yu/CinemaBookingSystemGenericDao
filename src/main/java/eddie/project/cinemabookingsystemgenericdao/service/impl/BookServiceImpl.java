@@ -5,15 +5,17 @@ import eddie.project.cinemabookingsystemgenericdao.dao.MovieDao;
 import eddie.project.cinemabookingsystemgenericdao.dto.RoomType;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookCheck;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookStatusUpdate;
-import eddie.project.cinemabookingsystemgenericdao.dto.book.InsertOrderDTO;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.OrderCount;
 import eddie.project.cinemabookingsystemgenericdao.entity.Book;
+import eddie.project.cinemabookingsystemgenericdao.exception.CustomNotFoundException;
+import eddie.project.cinemabookingsystemgenericdao.exception.DatabaseException;
 import eddie.project.cinemabookingsystemgenericdao.service.BookService;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.FlashMapManager;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -24,13 +26,18 @@ public class BookServiceImpl implements BookService {
     private MovieDao movieDao;
 
     @Override
-    public void insertBook(Integer UserId, BookCheck bookCheck) {//增加新訂單的功能
+    public void insertBook(Integer userId, BookCheck bookCheck) {
         Book book = new Book();
-        book.setUserId(UserId);
+        book.setUserId(userId);
         book.setMovieId(bookCheck.getMovieId());
         book.setSeatId(bookCheck.getSeatId());
         book.setStatus(0);
-        bookDao.insert(book);
+
+        try {
+            bookDao.insert(book);
+        } catch (PersistenceException e) {
+            throw new DatabaseException("資料庫錯誤，新增訂單失敗", e);
+        }
     }
 
     @Override
@@ -39,7 +46,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<Book> findBookByUserId(Integer id) {//從使用者ID尋找該使用者的訂單
+    public List<Book> findBookByUserId(Integer id) {
         return bookDao.findBookByUserId(id);
     }
 
@@ -47,7 +54,6 @@ public class BookServiceImpl implements BookService {
     public List<Book> findByPaidStatus(Integer status) {
         return bookDao.findByPaidStatus(status);
     }
-
 
     @Override
     public List<Book> findBooksByDateRange(Date startDate, Date endDate) {
@@ -78,86 +84,82 @@ public class BookServiceImpl implements BookService {
     public List<OrderCount> findMovieOrderPaidCountTimeRange(Integer status, Date startDate, Date endDate) {
         return bookDao.findMovieOrderPaidCountTimeRange(status, startDate, endDate);
     }
+
     @Override
-    public List<String> bookSeatCheck(BookCheck bookCheck){//確認訂位電影廳已被定位的的座位
+    public List<String> bookSeatCheck(BookCheck bookCheck) {
         return bookDao.BookSeatCheck(bookCheck.getMovieId());
     }
-    /******
-           電影院有三層
-           影廳:
-           第一層有4個影廳，第二層有7個影廳，第三層有10個影廳
-           每個影廳編號會由樓層跟英文字母來排列
-           第一層的開頭為1,第二層的開頭為2,第三層的開頭為3
-           層數之間，每個影廳的編號用英文字母來排列
 
-           座位:
-           第一層是大影廳，第二層是中影聽，第三層是小影廳
-           每一層的排數是相等的，行數是不相等的，行數會以英文字母顯示
-           第一層有15行，第二層有10行,第三層有7行
-     */
     @Override
-    public RoomType roomTypeCheck(BookCheck bookCheck){
+    public RoomType roomTypeCheck(BookCheck bookCheck) {
+        String roomWay = Optional.ofNullable(movieDao.findById(bookCheck.getMovieId()))
+                .orElseThrow(() -> new CustomNotFoundException("找不到電影 ID: " + bookCheck.getMovieId()))
+                .getRoomWay();
 
-        String roomWay=movieDao.findById(bookCheck.getMovieId()).getRoomWay();
-        RoomType roomType= new RoomType();
+        RoomType roomType = new RoomType();
         roomType.setRoomFloor(Character.getNumericValue(roomWay.charAt(0)));
         roomType.setRoomSide(roomWay.charAt(1));
 
-        if(roomType.getRoomFloor()==1){
-            roomType.setRoomSize(15);
-        } else if (roomType.getRoomFloor()==2) {
-            roomType.setRoomSize(10);
-        }else if (roomType.getRoomFloor()==3){
-            roomType.setRoomSize(7);
+        switch (roomType.getRoomFloor()) {
+            case 1 -> roomType.setRoomSize(15);
+            case 2 -> roomType.setRoomSize(10);
+            case 3 -> roomType.setRoomSize(7);
+            default -> throw new IllegalArgumentException("無效的影廳樓層: " + roomType.getRoomFloor());
         }
         return roomType;
-    }//通過給予電影名稱來確定電影的廳型
+    }
 
     @Override
-    public boolean bookCheck(BookCheck bookCheck) throws Exception {
+    public boolean bookCheck(BookCheck bookCheck) {
         String seatId = bookCheck.getSeatId();
-        // 1️⃣ 檢查格式是否正確
+
         if (!seatId.matches("^[1-9][A-O]$")) {
-            throw new Exception("Oh~看來你喜歡用作弊的方式來訂位，但違反我的規則了");
+            throw new IllegalArgumentException("座位格式錯誤");
         }
-        // 2️⃣ 檢查座位是否已被預訂
+
         if (bookSeatCheck(bookCheck).contains(seatId)) {
-            throw new Exception("該座位已經被預訂");
+            throw new IllegalStateException("該座位已經被預訂");
         }
-        // 3️⃣ 檢查座位是否超出房間範圍
+
         if (roomTypeCheck(bookCheck).getRoomSize() < (seatId.charAt(1) - 'A' + 1)) {
-            throw new Exception("沒有該座位");
+            throw new IllegalArgumentException("沒有該座位");
         }
-        // 4️⃣ 以上條件都通過，回傳 true
+
         return true;
     }
 
     @Override
     public void updateBook(Book book) {
-        bookDao.update(book);
+        try {
+            bookDao.update(book);
+        } catch (PersistenceException e) {
+            throw new DatabaseException("資料庫錯誤，更新訂單失敗", e);
+        }
     }
 
     @Override
-    public String statusUpdate(BookStatusUpdate bookStatusUpdate){
-        Book book=bookDao.findById(bookStatusUpdate.getId());//取得原訂單資訊
+    public String statusUpdate(BookStatusUpdate bookStatusUpdate) {
+        Book book = Optional.ofNullable(bookDao.findById(bookStatusUpdate.getId()))
+                .orElseThrow(() -> new CustomNotFoundException("找不到訂單 ID: " + bookStatusUpdate.getId()));
+
         book.setStatus(bookStatusUpdate.getStatus());
         book.setPayTime(new Date());
 
-        if(bookStatusUpdate.getStatus()==1){
-            bookDao.update(book);
-            return "訂單已付款\t付款時間為\t"+book.getPayTime();
-        }else if(bookStatusUpdate.getStatus()==2){
-            bookDao.update(book);
-            return "訂單取消\t取消時間為\t"+book.getPayTime();
-        }
-        return null;
+        bookDao.update(book);
+
+        return switch (bookStatusUpdate.getStatus()) {
+            case 1 -> "訂單已付款，付款時間：" + book.getPayTime();
+            case 2 -> "訂單已取消，取消時間：" + book.getPayTime();
+            default -> "未知狀態更新";
+        };
     }
 
     @Override
     public String seatChange(BookStatusUpdate bookStatusUpdate) {
         try {
-            Book book = bookDao.findById(bookStatusUpdate.getId());
-            // 創建一個新的 BookCheck 來儲存使用者預更新的資料
+            Book book = Optional.ofNullable(bookDao.findById(bookStatusUpdate.getId()))
+                    .orElseThrow(() -> new CustomNotFoundException("找不到訂單 ID: " + bookStatusUpdate.getId()));
+
             BookCheck bookCheck = new BookCheck();
             bookCheck.setMovieId(book.getMovieId());
             bookCheck.setSeatId(bookStatusUpdate.getSeatid());
@@ -168,16 +170,17 @@ public class BookServiceImpl implements BookService {
                 return "座位已更換";
             }
         } catch (Exception e) {
-            return "座位更換失敗：" + e.getMessage(); // 直接回傳錯誤訊息
+            return "座位更換失敗：" + e.getMessage();
         }
         return "座位更換失敗";
     }
 
-
-
     @Override
     public void deleteBook(Book book) {
-        bookDao.deleteById(book.getId());
+        try {
+            bookDao.deleteById(book.getId());
+        } catch (PersistenceException e) {
+            throw new DatabaseException("資料庫錯誤，刪除訂單失敗", e);
+        }
     }
-
 }
