@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.3.final using JasperReports Library version 6.21.3-4a3078d20785ebe464f18037d738d12fc98c13cf  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="allbook" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="ced95029-b569-4027-895c-af2843a4e088">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="cinama"/>
+	<style name="Title" fontName="Times New Roman" fontSize="50" isBold="true"/>
+	<style name="SubTitle" forecolor="#736343" fontName="Arial" fontSize="18"/>
+	<style name="Column header" forecolor="#666666" fontName="Arial" fontSize="12" isBold="true"/>
+	<style name="Detail" fontName="Arial" fontSize="12"/>
+	<style name="Row" mode="Transparent">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+			<style backcolor="#E6DAC3"/>
+		</conditionalStyle>
+	</style>
+	<queryString language="SQL">
+		<![CDATA[SELECT 
+    b.id AS booking_id,
+    b.user_id,
+    b.movie_id,
+    m.moviename,
+    b.seat_id,
+    b.status,
+    b.book_time,
+    b.pay_time
+FROM books b
+JOIN movie m ON b.movie_id = m.id
+ORDER BY b.id; -- 按訂單 ID 排序]]>
+	</queryString>
+	<field name="booking_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="id"/>
+		<property name="com.jaspersoft.studio.field.label" value="booking_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="books"/>
+	</field>
+	<field name="user_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="user_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="user_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="books"/>
+	</field>
+	<field name="moviename" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="moviename"/>
+		<property name="com.jaspersoft.studio.field.label" value="moviename"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="movie"/>
+	</field>
+	<field name="status" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="status"/>
+		<property name="com.jaspersoft.studio.field.label" value="status"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="books"/>
+	</field>
+	<field name="book_time" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="book_time"/>
+		<property name="com.jaspersoft.studio.field.label" value="book_time"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="books"/>
+	</field>
+	<field name="pay_time" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="pay_time"/>
+		<property name="com.jaspersoft.studio.field.label" value="pay_time"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="books"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="136" splitType="Stretch">
+			<image>
+				<reportElement x="0" y="0" width="164" height="126" uuid="ddc15723-2728-421f-b95e-2df9faf64ce1"/>
+				<imageExpression><![CDATA["reports/coffee.jpg"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement style="Title" x="170" y="0" width="330" height="62" uuid="1a652692-054a-40f3-ade5-68d8da36626d"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="utf-8"/>
+				</textElement>
+				<text><![CDATA[電影訂位清單]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="SubTitle" x="219" y="62" width="196" height="22" uuid="88d4231e-f014-4b0d-b871-1737ba63a1ae"/>
+				<textElement>
+					<font fontName="utf-8"/>
+				</textElement>
+				<text><![CDATA[全部訂位]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="172" y="94" width="383" height="42" uuid="f0bfb1ea-a85a-47cd-a1a4-43f22b45e80f"/>
+				<textElement textAlignment="Left">
+					<font fontName="utf-8" size="12"/>
+				</textElement>
+				<text><![CDATA[以下為全部訂單的資訊
+	訂單狀態=0代表為付款	訂位狀態=1時代表已付款
+	訂位狀態=2時代表訂位取消]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="16" splitType="Stretch">
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="15" width="555" height="1" uuid="1a61a836-d137-48b1-ad67-6ff64600bf93"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement style="Column header" x="0" y="0" width="92" height="15" forecolor="#736343" uuid="5a8c13ce-af07-4d16-b618-a0ca94830034">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="61c095a7-8ea1-49be-b54b-940b8590b6a4"/>
+				</reportElement>
+				<textElement>
+					<font fontName="utf-8"/>
+				</textElement>
+				<text><![CDATA[訂位編號]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="92" y="0" width="92" height="15" forecolor="#736343" uuid="f34bbcee-0742-46d1-a15d-0fb85e112b25">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="e3ba6898-4143-4393-96aa-d506cfbb248d"/>
+				</reportElement>
+				<textElement>
+					<font fontName="utf-8"/>
+				</textElement>
+				<text><![CDATA[使用者ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="184" y="0" width="92" height="15" forecolor="#736343" uuid="a81aaea3-1cb6-4f7f-b045-cefaa9bce22b">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5a59518b-32b1-4b32-9376-03d31d8318d5"/>
+				</reportElement>
+				<textElement>
+					<font fontName="utf-8"/>
+				</textElement>
+				<text><![CDATA[電影名稱]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="276" y="0" width="92" height="15" forecolor="#736343" uuid="2c05fada-f774-4358-9afe-b15376ccc490">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b2ec9d2f-3505-4781-8e68-147b129f730a"/>
+				</reportElement>
+				<textElement>
+					<font fontName="utf-8"/>
+				</textElement>
+				<text><![CDATA[訂單狀態]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="368" y="0" width="92" height="15" forecolor="#736343" uuid="69b63610-78ef-49fe-baca-9038e00d6e74">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a6406f1f-7efd-4f1e-b200-12ec5cb10d92"/>
+				</reportElement>
+				<textElement>
+					<font fontName="utf-8"/>
+				</textElement>
+				<text><![CDATA[訂位時間]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="460" y="0" width="92" height="15" forecolor="#736343" uuid="25895ca2-2e8e-4e52-992e-e6fdfd71f15e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="be088565-8593-4310-b7e2-e92ccaacbed2"/>
+				</reportElement>
+				<textElement>
+					<font fontName="utf-8"/>
+				</textElement>
+				<text><![CDATA[付費/取消訂位時間]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<frame>
+				<reportElement style="Row" mode="Opaque" x="0" y="0" width="555" height="15" uuid="a98495d8-3c8d-4fa0-81f5-30c3efc2f766"/>
+				<textField textAdjust="StretchHeight">
+					<reportElement style="Detail" x="0" y="0" width="92" height="15" uuid="ef26ea1f-d072-430c-bd8f-9a6877944631">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="61c095a7-8ea1-49be-b54b-940b8590b6a4"/>
+					</reportElement>
+					<textFieldExpression><![CDATA[$F{booking_id}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight">
+					<reportElement style="Detail" x="92" y="0" width="92" height="15" uuid="8bc13586-88dc-45cc-94da-e4f2b0c7fd13">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="e3ba6898-4143-4393-96aa-d506cfbb248d"/>
+					</reportElement>
+					<textFieldExpression><![CDATA[$F{user_id}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight">
+					<reportElement style="Detail" x="184" y="0" width="92" height="15" uuid="23e6e054-6684-44c8-81b8-ad18c21c8a38">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5a59518b-32b1-4b32-9376-03d31d8318d5"/>
+					</reportElement>
+					<textElement>
+						<font fontName="utf-8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{moviename}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight">
+					<reportElement style="Detail" x="276" y="0" width="92" height="15" uuid="6a4976f2-ca58-41d9-b034-e57d03db1ae2">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b2ec9d2f-3505-4781-8e68-147b129f730a"/>
+					</reportElement>
+					<textFieldExpression><![CDATA[$F{status}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight">
+					<reportElement style="Detail" x="368" y="0" width="92" height="15" uuid="228a5466-8cb7-4630-9624-79be822c27e8">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a6406f1f-7efd-4f1e-b200-12ec5cb10d92"/>
+					</reportElement>
+					<textFieldExpression><![CDATA[$F{book_time}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight">
+					<reportElement style="Detail" x="460" y="0" width="92" height="15" uuid="f4ab738c-d29a-4276-915a-f1f294dedff1">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="be088565-8593-4310-b7e2-e92ccaacbed2"/>
+					</reportElement>
+					<textFieldExpression><![CDATA[$F{pay_time}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch">
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="3" width="555" height="1" uuid="fa45a887-615a-4d84-a2d7-8a2219671b3c"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="25" splitType="Stretch">
+			<frame>
+				<reportElement mode="Opaque" x="-21" y="1" width="597" height="24" forecolor="#D0B48E" backcolor="#F2EBDF" uuid="183682bc-d976-4756-83e0-6625a3f98ed1"/>
+				<textField evaluationTime="Report">
+					<reportElement style="Column header" x="533" y="0" width="40" height="20" forecolor="#736343" uuid="0193f9b3-1559-491a-8580-b6988863b6a1"/>
+					<textElement verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="Column header" x="453" y="0" width="80" height="20" forecolor="#736343" uuid="d00b105e-494b-418b-8ac9-8b1b4824f4f0"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+				</textField>
+				<textField pattern="EEEEE dd MMMMM yyyy">
+					<reportElement style="Column header" x="22" y="1" width="197" height="20" forecolor="#736343" uuid="0616f3fe-0354-456f-8911-ec30ec51a5ae"/>
+					<textElement verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
