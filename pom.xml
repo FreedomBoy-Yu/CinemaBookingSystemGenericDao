@@ -130,9 +130,8 @@
             <groupId>eddie.project.cinemabookingsystemgenericdao</groupId>
             <artifactId>utf-8</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/libs/utf_8.jar</systemPath>
         </dependency>
+
 
 
 
