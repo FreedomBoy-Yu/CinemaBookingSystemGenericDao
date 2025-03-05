@@ -20,48 +20,30 @@ public class JasperReportService {
 
     public JasperReportService(DataSource dataSource) {
         this.dataSource = dataSource;
-        registerCustomFont();
     }
 
     /**
-     * ✅ 註冊自訂字型，讓 JasperReports 能夠識別 utf-8 字型
+     * 生成報表，可支援帶參數
+     * @param reportName 報表名稱（不含副檔名）
+     * @param parameters 報表參數（可為空）
+     * @return PDF 檔案 byte[]
      */
-    private void registerCustomFont() {
-        try {
-            // 讀取 utf-8.jar 內的字型
-            InputStream fontStream = getClass().getClassLoader().getResourceAsStream("fonts/utf-8.ttf");
-            if (fontStream == null) {
-                throw new RuntimeException("❌ 找不到字型檔案 utf-8.ttf，請確保它放在 src/main/resources/fonts/ 資料夾");
-            }
 
-            // 創建字型並註冊到 JVM
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            ge.registerFont(customFont);
-            System.out.println("✅ 自訂字型註冊成功：" + customFont.getFontName());
-
-        } catch (FontFormatException | IOException e) {
-            System.err.println("❌ 自訂字型載入失敗：" + e.getMessage());
-        }
-    }
-
-    /**
-     *  產生 PDF 報表，並確保 utf-8 字型可以使用
-     */
-    public byte[] generateReport() throws Exception {
+    public byte[] generateReport(String reportName, HashMap<String, Object> parameters) throws Exception {
         // 1️⃣ 檢查報表檔案是否存在
-        InputStream reportStream = getClass().getClassLoader().getResourceAsStream("reports/allbook.jrxml");
+        InputStream reportStream = getClass().getClassLoader().getResourceAsStream("reports/" + reportName + ".jrxml");
         if (reportStream == null) {
-            throw new RuntimeException("❌ 找不到報表文件 allbook.jrxml，請檢查 src/main/resources/reports/ 是否有此檔案");
+            throw new RuntimeException("❌ 找不到報表文件 " + reportName + ".jrxml，請檢查 src/main/resources/reports/ 是否有此檔案");
         }
 
         // 2️⃣ 編譯 .jrxml 為 .jasper
         JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
 
-        // 3️⃣ 設定參數，讓報表支援 UTF-8 字型
-        HashMap<String, Object> parameters = new HashMap<>();
+        // 3️⃣ 設定參數（如果為 null，則用空的 HashMap）
+        if (parameters == null) {
+            parameters = new HashMap<>();
+        }
         parameters.put(JRParameter.REPORT_LOCALE, java.util.Locale.TAIWAN);
-        parameters.put("REPORT_FONT", "utf-8");
 
         // 4️⃣ 取得資料庫連線
         try (Connection connection = dataSource.getConnection()) {
@@ -78,3 +60,4 @@ public class JasperReportService {
         }
     }
 }
+
