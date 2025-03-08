@@ -61,7 +61,6 @@ public class ManagerController {
     /***********************************************從這裡****************************************/
 
 
-
     @GetMapping("/findAllBook")
     public List<Book> findAllBook() {
         return bookService.findAll();
@@ -108,18 +107,14 @@ public class ManagerController {
     @GetMapping("/paiddaterange") // 用電影的 id 排序已付款的訂單，並設置排序的時間日期
     public List<OrderCount> findMovieOrderPaidCountTimeRange(
             @RequestParam("paid") Integer paid,
-            @RequestParam("startDate")@DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate
     ) {
         return bookService.findMovieOrderPaidCountTimeRange(paid, startDate, endDate);
     }
 
 
-
-
-
-
     /***********************************************到這裡是Booking相關的設置的controller***********/
-    }
+}
 
 

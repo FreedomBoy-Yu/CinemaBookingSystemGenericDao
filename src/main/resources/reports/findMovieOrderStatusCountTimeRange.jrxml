@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.3.final using JasperReports Library version 6.21.3-4a3078d20785ebe464f18037d738d12fc98c13cf  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="findMovieOrderPaidCountTimeRange" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="ced95029-b569-4027-895c-af2843a4e088">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="cinama"/>
+	<style name="Title" fontName="Times New Roman" fontSize="50" isBold="true"/>
+	<style name="SubTitle" forecolor="#736343" fontName="Arial" fontSize="18"/>
+	<style name="Column header" forecolor="#666666" fontName="Arial" fontSize="12" isBold="true"/>
+	<style name="Detail" fontName="Arial" fontSize="12"/>
+	<style name="Row" mode="Transparent">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+			<style backcolor="#E6DAC3"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="status" class="java.lang.Integer"/>
+	<parameter name="startDate" class="java.sql.Date"/>
+	<parameter name="endDate" class="java.sql.Date"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT 
+    b.movie_id,
+    m.moviename,
+    MAX(b.book_time) AS book_time,
+    MAX(b.pay_time) AS pay_time,
+    t.paid_count AS order_count
+FROM books b
+JOIN (
+    SELECT movie_id, COUNT(*) AS paid_count
+    FROM books
+    WHERE status = $P{status}
+      AND book_time BETWEEN $P{startDate} AND $P{endDate}
+    GROUP BY movie_id
+) t ON b.movie_id = t.movie_id
+JOIN movie m ON b.movie_id = m.id  -- 把 movie_id 改成 id
+WHERE b.status = $P{status}
+  AND b.book_time BETWEEN $P{startDate} AND $P{endDate}
+GROUP BY b.movie_id, m.moviename, t.paid_count
+ORDER BY t.paid_count DESC, b.movie_id DESC]]>
+	</queryString>
+	<field name="moviename" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="moviename"/>
+		<property name="com.jaspersoft.studio.field.label" value="moviename"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="movie"/>
+	</field>
+	<field name="order_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="paid_count"/>
+		<property name="com.jaspersoft.studio.field.label" value="order_count"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="136" splitType="Stretch">
+			<image>
+				<reportElement x="0" y="0" width="164" height="126" uuid="ddc15723-2728-421f-b95e-2df9faf64ce1"/>
+				<imageExpression><![CDATA["reports/coffee.jpg"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement style="Title" x="170" y="0" width="382" height="62" uuid="1a652692-054a-40f3-ade5-68d8da36626d"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="utf-8" size="32"/>
+				</textElement>
+				<text><![CDATA[訂單狀態範圍時間查詢]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="SubTitle" x="170" y="62" width="385" height="74"/>
+				<textElement>
+					<font fontName="utf-8" size="18"/>  <!-- 確保 <font> 放在 <textElement> 內 -->
+				</textElement>
+				<textFieldExpression><![CDATA[
+        "時間範圍: " + $P{startDate} + " ～ " + $P{endDate} + "\n" +
+        "狀態: " +
+        ($P{status} == 0 ? "未付款" :
+        ($P{status} == 1 ? "已付款" :
+        ($P{status} == 2 ? "取消訂單" : "未知狀態")))
+    ]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="16" splitType="Stretch">
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="15" width="555" height="1" uuid="1a61a836-d137-48b1-ad67-6ff64600bf93"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement style="Column header" x="0" y="0" width="277" height="15" forecolor="#736343" uuid="2a4e44d2-af84-42c8-af41-da95f0d115b4">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5e7ead78-635d-4a7d-9e48-327438bbdf1a"/>
+				</reportElement>
+				<textElement>
+					<font fontName="utf-8"/>
+				</textElement>
+				<text><![CDATA[電影名稱]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="277" y="0" width="277" height="15" forecolor="#736343" uuid="6027c723-ba34-4f69-a424-70692068b187">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="2dce38e9-cc57-4071-87be-527914996e6d"/>
+				</reportElement>
+				<textElement>
+					<font fontName="utf-8"/>
+				</textElement>
+				<text><![CDATA[訂單數量]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<frame>
+				<reportElement style="Row" mode="Opaque" x="0" y="0" width="555" height="15" uuid="a98495d8-3c8d-4fa0-81f5-30c3efc2f766"/>
+				<textField textAdjust="StretchHeight">
+					<reportElement style="Detail" x="0" y="0" width="277" height="15" uuid="39a1af4d-757e-4230-80d1-417584edd580">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5e7ead78-635d-4a7d-9e48-327438bbdf1a"/>
+					</reportElement>
+					<textElement>
+						<font fontName="utf-8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{moviename}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight">
+					<reportElement style="Detail" x="277" y="0" width="277" height="15" uuid="d5b5f59d-90a7-45bf-b800-d9dd49877856">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="2dce38e9-cc57-4071-87be-527914996e6d"/>
+					</reportElement>
+					<textElement>
+						<font fontName="utf-8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{order_count}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch">
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="3" width="555" height="1" uuid="fa45a887-615a-4d84-a2d7-8a2219671b3c"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="25" splitType="Stretch">
+			<frame>
+				<reportElement mode="Opaque" x="-21" y="1" width="597" height="24" forecolor="#D0B48E" backcolor="#F2EBDF" uuid="183682bc-d976-4756-83e0-6625a3f98ed1"/>
+				<textField evaluationTime="Report">
+					<reportElement style="Column header" x="533" y="0" width="40" height="20" forecolor="#736343" uuid="0193f9b3-1559-491a-8580-b6988863b6a1"/>
+					<textElement verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="Column header" x="453" y="0" width="80" height="20" forecolor="#736343" uuid="d00b105e-494b-418b-8ac9-8b1b4824f4f0"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+				</textField>
+				<textField pattern="EEEEE dd MMMMM yyyy">
+					<reportElement style="Column header" x="22" y="1" width="197" height="20" forecolor="#736343" uuid="0616f3fe-0354-456f-8911-ec30ec51a5ae"/>
+					<textElement verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

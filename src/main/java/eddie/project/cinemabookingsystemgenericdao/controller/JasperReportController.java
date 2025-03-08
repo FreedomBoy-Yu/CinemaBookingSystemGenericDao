@@ -1,6 +1,7 @@
 package eddie.project.cinemabookingsystemgenericdao.controller;
 
 import eddie.project.cinemabookingsystemgenericdao.service.impl.JasperReportService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.HashMap;
 
 @RestController
@@ -42,16 +44,53 @@ public class JasperReportController {
     /**
      * 📌 下載「特定日期範圍內的銷售報表」
      */
-    @GetMapping("/download/salesreport")
-    public ResponseEntity<byte[]> downloadSalesReport(
-            @RequestParam String startDate,
-            @RequestParam String endDate) {
+    @GetMapping("/download/daterange")
+    public ResponseEntity<byte[]> downloadDateRange(
+            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
         HashMap<String, Object> parameters = new HashMap<>();
-        parameters.put("startDate", startDate);
-        parameters.put("endDate", endDate);
-        return generateReportResponse("salesReport", parameters);
+        parameters.put("startDate", new java.sql.Date(startDate.getTime()));
+        parameters.put("endDate", new java.sql.Date(endDate.getTime()));
+        return generateReportResponse("daterange", parameters);
+    }
+    //findBookByMovieId
+    @GetMapping("/download/findBookBymovieId")
+    public ResponseEntity<byte[]> downloadFindBookBymovieId(
+            @RequestParam("movieId")Integer movieId)
+    {
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("movieId", movieId);
+        return generateReportResponse("findBookByMovieId", parameters);
+    }
+    @GetMapping("/download/findBookStatusCountByUser")
+    public ResponseEntity<byte[]> downloadFindBookStatusCountByUser(@RequestParam Integer paid) {
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("paid", paid);
+        return generateReportResponse("findBookPaidCountByUser", parameters);
+    }
+    @GetMapping("/download/findMovieOrderCount")
+    public ResponseEntity<byte[]> downloadFindMovieOrderCount() {
+        HashMap<String, Object> parameters = new HashMap<>();
+        return generateReportResponse("findMovieOrderCount", parameters);
     }
 
+    @GetMapping("/download/findMovieOrderStatusCount")
+    public ResponseEntity<byte[]> downloadFindMovieOrderStatusCount(@RequestParam Integer status) {
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("status", status);
+        return generateReportResponse("findMovieOrderStatusCount", parameters);
+    }
+    @GetMapping("/download/findMovieOrderPaidCountTimeRange")
+    public ResponseEntity<byte[]> downloadFindMovieOrderPaidCountTimeRange(
+            @RequestParam Integer status,
+            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("status", status);
+        parameters.put("startDate", new java.sql.Date(startDate.getTime()));
+        parameters.put("endDate", new java.sql.Date(endDate.getTime()));
+        return generateReportResponse("findMovieOrderStatusCountTimeRange", parameters);
+    }
     /**
      * 📌 通用方法 - 產生報表並回傳 PDF
      */
