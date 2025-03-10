@@ -106,7 +106,7 @@
         GROUP BY b.movie_id, t.paid_count
         ORDER BY t.paid_count DESC, b.movie_id DESC;
     </select>
-    <select id="BookSeatCheck" parameterType="int" resultType="java.lang.String">
+    <select id="bookSeatCheck" parameterType="int" resultType="java.lang.String">
         SELECT seat_id FROM books
         WHERE movie_id = #{movieId} AND status != 2
     </select>

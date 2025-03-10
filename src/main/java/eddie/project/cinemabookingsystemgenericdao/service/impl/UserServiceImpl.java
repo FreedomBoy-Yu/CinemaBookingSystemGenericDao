@@ -1,9 +1,6 @@
 package eddie.project.cinemabookingsystemgenericdao.service.impl;
 
-import eddie.project.cinemabookingsystemgenericdao.dto.user.UserJwtResponseDTO;
-import eddie.project.cinemabookingsystemgenericdao.dto.user.UserLoginDTO;
-import eddie.project.cinemabookingsystemgenericdao.dto.user.UserSignInDTO;
-import eddie.project.cinemabookingsystemgenericdao.dto.user.UserUpdateDTO;
+import eddie.project.cinemabookingsystemgenericdao.dto.user.*;
 import eddie.project.cinemabookingsystemgenericdao.service.UserService;
 import eddie.project.cinemabookingsystemgenericdao.dao.UserDao;
 import eddie.project.cinemabookingsystemgenericdao.entity.User;
@@ -37,6 +34,18 @@ public class UserServiceImpl implements UserService {
     public User findById(Integer id) {
         return Optional.ofNullable(userDao.findById(id))
                 .orElseThrow(() -> new CustomNotFoundException("找不到使用者 ID: " + id));
+    }
+
+    @Override
+    public UserInfo viewUserInfo(String token) {
+        User user=userDao.findById(jwtUtil.validateToken(token).getId());
+        UserInfo userInfo=new UserInfo();
+        userInfo.setAccount(user.getAccount());
+        userInfo.setName(user.getName());
+        userInfo.setEmail(user.getEmail());
+        userInfo.setPhone(user.getPhone());
+        userInfo.setRole(user.getRole());
+        return userInfo;
     }
 
     @Override
@@ -111,6 +120,22 @@ public class UserServiceImpl implements UserService {
     public Integer jwtToUserId(String token) {
         try {
             return jwtUtil.validateToken(token).getId();
+        } catch (Exception e) {
+            throw new RuntimeException("JWT 解析失敗", e);
+        }
+    }
+
+    @Override
+    public String changePassword(String token, String oldPD,String newPD) {
+        try {
+            User user=userDao.findById(jwtUtil.validateToken(token).getId());
+            if (!user.getPassword().equals(oldPD)) {
+                return "新密碼與舊密碼不一致";
+            }else{
+                user.setPassword(newPD);
+                userDao.update(user);
+                return "密碼變更成功!";
+            }
         } catch (Exception e) {
             throw new RuntimeException("JWT 解析失敗", e);
         }

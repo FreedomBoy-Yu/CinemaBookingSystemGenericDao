@@ -24,6 +24,7 @@ public class UserDaoImpl implements UserDao {
         return userMapper.LoginByAccount(account, password);
     }
 
+
     @Override
     public void insert(User user) {
         userMapper.insertUser(user);

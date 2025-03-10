@@ -3,13 +3,10 @@ package eddie.project.cinemabookingsystemgenericdao.controller;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookCheck;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookStatusUpdate;
 import eddie.project.cinemabookingsystemgenericdao.dto.movie.MovieDTO;
-import eddie.project.cinemabookingsystemgenericdao.dto.user.UserLoginDTO;
-import eddie.project.cinemabookingsystemgenericdao.dto.user.UserJwtResponseDTO;
-import eddie.project.cinemabookingsystemgenericdao.dto.user.UserUpdateDTO;
+import eddie.project.cinemabookingsystemgenericdao.dto.user.*;
 import eddie.project.cinemabookingsystemgenericdao.entity.Book;
 import eddie.project.cinemabookingsystemgenericdao.service.MovieService;
 import eddie.project.cinemabookingsystemgenericdao.service.UserService;
-import eddie.project.cinemabookingsystemgenericdao.dto.user.UserSignInDTO;
 import eddie.project.cinemabookingsystemgenericdao.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/users")
 public class UserController {
 
@@ -33,22 +31,38 @@ public class UserController {
         userService.insertUser(userSignInDTO);
     }
 
-    @PutMapping("/updateTest")
-    public void updateTest(@RequestHeader("Authorization") String token, @RequestBody UserUpdateDTO userUpdateDTO) {
+    @PutMapping("/update")
+    public void update(@RequestHeader("Authorization") String token, @RequestBody UserUpdateDTO userUpdateDTO) {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid Authorization header");
         }
         String jwtToken = token.substring(7);
         UserJwtResponseDTO userJwtResponseDTO = userService.jwtTest(jwtToken);
         userUpdateDTO.setId(userJwtResponseDTO.getId());
-
-        userUpdateDTO.setRole(0);
+        userUpdateDTO.setRole(userJwtResponseDTO.getRole());
         userService.updateUser(userUpdateDTO);
+    }
+    @PutMapping("/chabgepd")
+    public void changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordDTO changePasswordDTO) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new RuntimeException("Invalid Authorization header");
+        }
+        String jwtToken = token.substring(7);
+        userService.changePassword(jwtToken,changePasswordDTO.getOldPD(), changePasswordDTO.getNewPD());
     }
 
     @PostMapping("/login")
     public String login(@RequestBody UserLoginDTO userLoginDto) {
         return userService.login(userLoginDto);
+    }
+    @GetMapping("/userinfo")
+    public UserInfo viewUserInfo(@RequestHeader("Authorization") String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new RuntimeException("Invalid Authorization header");
+        }
+        String jwtToken = token.substring(7);
+        UserJwtResponseDTO userJwtResponseDTO = userService.jwtTest(jwtToken);
+        return userService.viewUserInfo(jwtToken);
     }
 
     @PostMapping("/jwttest")//測試完成後應該刪除這個功能

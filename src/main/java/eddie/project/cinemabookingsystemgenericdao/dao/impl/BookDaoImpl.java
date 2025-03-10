@@ -69,8 +69,8 @@ public class BookDaoImpl implements BookDao {
 
     /********************************************************/
     @Override
-    public List<String> BookSeatCheck(Integer movieId){
-        return bookmapper.BookSeatCheck(movieId);
+    public List<String> bookSeatCheck(Integer movieId){
+        return bookmapper.bookSeatCheck(movieId);
     }
     //update
     @Override

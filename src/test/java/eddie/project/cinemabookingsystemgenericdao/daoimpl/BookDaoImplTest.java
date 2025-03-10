@@ -115,6 +115,6 @@ public class BookDaoImplTest {
     }
     @Test
     public void BookSeatCheckTest(){
-        bookDao.BookSeatCheck(3).forEach(System.out::println);
+        bookDao.bookSeatCheck(3).forEach(System.out::println);
     }
 }

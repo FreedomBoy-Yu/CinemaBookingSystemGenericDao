@@ -23,7 +23,7 @@ public interface BookMapper {
     List<OrderCount> findMovieOrderCount();//從電影排序訂單數量
     List<OrderCount> findMovieOrderPaidCount(Integer status);//從是否有付款的數量排序
     List<OrderCount> findMovieOrderPaidCountTimeRange(Integer status, Date startDate, Date endDate);
-    List<String> BookSeatCheck(Integer movieId);
+    List<String> bookSeatCheck(Integer movieId);
     //update
     void updateBook(Book book);
     //delete

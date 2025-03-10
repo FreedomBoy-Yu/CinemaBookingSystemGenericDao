@@ -15,5 +15,5 @@ public interface BookDao extends GenericDao<Book, Integer>{
     List<OrderCount> findMovieOrderCount();//從電影排序訂單數量只顯示數量不顯示其他資訊
     List<OrderCount> findMovieOrderPaidCount(Integer status);//用電影的id排序已付款的訂單
     List<OrderCount> findMovieOrderPaidCountTimeRange(Integer status, Date startDate, Date endDate);//用電影的id排序已付款的訂單，並設置排序的時間日期
-    List<String> BookSeatCheck(Integer movieId);
+    List<String> bookSeatCheck(Integer movieId);
 }

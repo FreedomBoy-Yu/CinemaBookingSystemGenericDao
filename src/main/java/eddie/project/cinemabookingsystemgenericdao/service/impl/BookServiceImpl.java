@@ -13,6 +13,8 @@ import eddie.project.cinemabookingsystemgenericdao.service.BookService;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +28,7 @@ public class BookServiceImpl implements BookService {
     private MovieDao movieDao;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void insertBook(Integer userId, BookCheck bookCheck) {
         Book book = new Book();
         book.setUserId(userId);
@@ -87,7 +90,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<String> bookSeatCheck(BookCheck bookCheck) {
-        return bookDao.BookSeatCheck(bookCheck.getMovieId());
+        return bookDao.bookSeatCheck(bookCheck.getMovieId());
     }
 
     @Override
@@ -129,6 +132,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateBook(Book book) {
         try {
             bookDao.update(book);
@@ -138,23 +142,34 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String statusUpdate(BookStatusUpdate bookStatusUpdate) {
-        Book book = Optional.ofNullable(bookDao.findById(bookStatusUpdate.getId()))
-                .orElseThrow(() -> new CustomNotFoundException("找不到訂單 ID: " + bookStatusUpdate.getId()));
+        try {
+            Book book = Optional.ofNullable(bookDao.findById(bookStatusUpdate.getId()))
+                    .orElseThrow(() -> new CustomNotFoundException("找不到訂單 ID: " + bookStatusUpdate.getId()));
 
-        book.setStatus(bookStatusUpdate.getStatus());
-        book.setPayTime(new Date());
+            book.setStatus(bookStatusUpdate.getStatus());
+            book.setPayTime(new Date());
 
-        bookDao.update(book);
+            bookDao.update(book);
 
-        return switch (bookStatusUpdate.getStatus()) {
-            case 1 -> "訂單已付款，付款時間：" + book.getPayTime();
-            case 2 -> "訂單已取消，取消時間：" + book.getPayTime();
-            default -> "未知狀態更新";
-        };
+            return switch (bookStatusUpdate.getStatus()) {
+                case 1 -> "訂單已付款，付款時間：" + book.getPayTime();
+                case 2 -> "訂單已取消，取消時間：" + book.getPayTime();
+                default -> "未知狀態更新";
+            };
+
+        } catch (CustomNotFoundException e) {
+            return "更新失敗：" + e.getMessage();
+        } catch (PersistenceException e) {
+            throw new DatabaseException("資料庫錯誤，更新失敗", e);
+        } catch (Exception e) {
+            throw new RuntimeException("發生未知錯誤，更新失敗", e);
+        }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String seatChange(BookStatusUpdate bookStatusUpdate) {
         try {
             Book book = Optional.ofNullable(bookDao.findById(bookStatusUpdate.getId()))
@@ -169,10 +184,16 @@ public class BookServiceImpl implements BookService {
                 updateBook(book);
                 return "座位已更換";
             }
-        } catch (Exception e) {
+            return "座位更換失敗，座位不可用";
+        } catch (CustomNotFoundException e) {
             return "座位更換失敗：" + e.getMessage();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return "座位更換失敗：" + e.getMessage();
+        } catch (PersistenceException e) {
+            throw new DatabaseException("資料庫錯誤，座位更換失敗", e);
+        } catch (Exception e) {
+            throw new RuntimeException("發生未知錯誤，座位更換失敗", e);
         }
-        return "座位更換失敗";
     }
 
     @Override
