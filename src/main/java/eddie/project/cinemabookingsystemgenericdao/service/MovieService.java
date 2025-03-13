@@ -13,6 +13,7 @@ public interface MovieService {
     public List<MovieDTO> findAll();//Read
 
     public MovieDTO findByMovieName(String movieName);//Read
+    public MovieDTO findByMovieId(Integer movieId);
 
     public void updateMovie(MovieDTO movie);//Update
 

@@ -16,6 +16,7 @@ import java.util.Optional;
 
 //商業邏輯
 @Service
+
 public class MovieServiceImpl implements MovieService {
 
     @Autowired
@@ -67,6 +68,16 @@ public class MovieServiceImpl implements MovieService {
                 .orElseThrow(() -> new CustomNotFoundException("找不到電影名稱：" + movieName));
 
         return new MovieDTO(movie.getMovieName(), movie.getRoomWay(), movie.getBookAble());
+    }
+
+    @Override
+    public MovieDTO findByMovieId(Integer movieId) {
+        MovieDTO movieDto = new MovieDTO();
+        Movie movie=movieDao.findById(movieId);
+        movieDto.setMovieName(movie.getMovieName());
+        movieDto.setRoomWay(movie.getRoomWay());
+        movieDto.setBookAble(movie.getBookAble());
+        return movieDto;
     }
     /*以下方法是GPT建議的做法*/
 

@@ -1,5 +1,6 @@
 package eddie.project.cinemabookingsystemgenericdao.controller;
 
+import eddie.project.cinemabookingsystemgenericdao.dto.RoomSeatShow;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookCheck;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookStatusUpdate;
 import eddie.project.cinemabookingsystemgenericdao.dto.movie.MovieDTO;
@@ -8,10 +9,13 @@ import eddie.project.cinemabookingsystemgenericdao.entity.Book;
 import eddie.project.cinemabookingsystemgenericdao.service.MovieService;
 import eddie.project.cinemabookingsystemgenericdao.service.UserService;
 import eddie.project.cinemabookingsystemgenericdao.service.BookService;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -42,7 +46,7 @@ public class UserController {
         userUpdateDTO.setRole(userJwtResponseDTO.getRole());
         userService.updateUser(userUpdateDTO);
     }
-    @PutMapping("/chabgepd")
+    @PutMapping("/changepd")
     public void changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordDTO changePasswordDTO) {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid Authorization header");
@@ -69,7 +73,7 @@ public class UserController {
     public UserJwtResponseDTO jwtTest(@RequestHeader("Authorization") String token) {
         return userService.jwtTest(token.replace("Bearer ", ""));
     }
-
+    /**********movie查詢相關******************************************************/
     @GetMapping("/movielist")
     public List<MovieDTO> findAllMovie() {
         return movieService.findAll();
@@ -80,6 +84,12 @@ public class UserController {
         return movieService.findByMovieName(name);
     }
 
+    @GetMapping("/movies/name/{movieid}")
+    public Map<String, String> findMovieById(@PathVariable Integer movieid) {
+        String movieName = movieService.findByMovieId(movieid).getMovieName();
+        return Collections.singletonMap("name", movieName); // 讓回應格式變成 { "name": "電影名稱" }
+    }
+
 
     /*****************以下是處理book相關功能，要賦予給使用者使用的功能******************/
 
@@ -88,6 +98,7 @@ public class UserController {
         Integer id = userService.jwtToUserId(token.replace("Bearer ", ""));
         return bookService.findBookByUserId(id);
     }
+
 
     @PostMapping("/userInsertBook")//使用者增加訂單
     public String bookCheck(@RequestHeader("Authorization") String token, @RequestBody BookCheck bookCheck) {
@@ -112,6 +123,10 @@ public class UserController {
     @PutMapping("/seatChange")//使用者更改自己的訂單
     public String bookupdate(@RequestHeader("Authorization") String token, @RequestBody BookStatusUpdate bookStatusUpdate) {
         return bookService.seatChange(bookStatusUpdate);
+    }
+    @GetMapping("/getseattatusformovie/{movieId}")
+    public RoomSeatShow getSeatStatusForMovie(@PathVariable Integer movieId) {
+        return bookService.bookSeatShow(movieId);
     }
 
 

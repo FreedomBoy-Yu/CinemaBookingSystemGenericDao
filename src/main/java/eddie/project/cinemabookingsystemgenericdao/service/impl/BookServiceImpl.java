@@ -2,6 +2,7 @@ package eddie.project.cinemabookingsystemgenericdao.service.impl;
 
 import eddie.project.cinemabookingsystemgenericdao.dao.BookDao;
 import eddie.project.cinemabookingsystemgenericdao.dao.MovieDao;
+import eddie.project.cinemabookingsystemgenericdao.dto.RoomSeatShow;
 import eddie.project.cinemabookingsystemgenericdao.dto.RoomType;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookCheck;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookStatusUpdate;
@@ -89,9 +90,18 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<String> bookSeatCheck(BookCheck bookCheck) {
+    public List<String> bookSeatCheck(BookCheck bookCheck) {//查看目前的電影定位狀況
         return bookDao.bookSeatCheck(bookCheck.getMovieId());
     }
+
+
+
+
+/*
+* 一層樓是15個橫向座位，屬於大影廳
+* 二層樓是10個橫向座位，屬於中影聽
+* 三層樓是7個橫向座位,屬於小影廳
+* */
 
     @Override
     public RoomType roomTypeCheck(BookCheck bookCheck) {
@@ -100,8 +110,8 @@ public class BookServiceImpl implements BookService {
                 .getRoomWay();
 
         RoomType roomType = new RoomType();
-        roomType.setRoomFloor(Character.getNumericValue(roomWay.charAt(0)));
-        roomType.setRoomSide(roomWay.charAt(1));
+        roomType.setRoomFloor(Character.getNumericValue(roomWay.charAt(0)));//取得影廳的樓層
+        roomType.setRoomSide(roomWay.charAt(1));//取得影廳的樓層位置
 
         switch (roomType.getRoomFloor()) {
             case 1 -> roomType.setRoomSize(15);
@@ -110,6 +120,26 @@ public class BookServiceImpl implements BookService {
             default -> throw new IllegalArgumentException("無效的影廳樓層: " + roomType.getRoomFloor());
         }
         return roomType;
+    }
+
+    @Override
+    public RoomSeatShow bookSeatShow(Integer movieId) {//查看目前的電影定位狀況
+        RoomSeatShow roomSeatShow = new RoomSeatShow();
+        char roomway=movieDao.findById(movieId).getRoomWay().charAt(0);//將影廳的編號一曲出來
+
+        switch (roomway) {
+            case '1' -> roomSeatShow.setRoomSize(15);
+            case '2' -> roomSeatShow.setRoomSize(10);
+            case '3' -> roomSeatShow.setRoomSize(7);
+            default -> throw new IllegalArgumentException("無效的影廳樓層: " + roomway);
+        }
+        List<String> bookedSeats = bookDao.bookSeatCheck(movieId);
+        if (bookedSeats != null) {
+            roomSeatShow.setSeat(bookedSeats.toArray(new String[0])); // 轉換 List<String> 為 String[]
+        } else {
+            roomSeatShow.setSeat(new String[0]); // 避免 NullPointerException
+        }
+        return roomSeatShow;
     }
 
     @Override

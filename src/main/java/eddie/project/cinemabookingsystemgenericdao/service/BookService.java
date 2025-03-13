@@ -1,5 +1,6 @@
 package eddie.project.cinemabookingsystemgenericdao.service;
 
+import eddie.project.cinemabookingsystemgenericdao.dto.RoomSeatShow;
 import eddie.project.cinemabookingsystemgenericdao.dto.RoomType;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookCheck;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookStatusUpdate;
@@ -33,6 +34,8 @@ public interface BookService {
     List<OrderCount> findMovieOrderPaidCountTimeRange(Integer paid,Date startDate, Date endDate);//用電影的id排序已付款的訂單，並設置排序的時間日期
 
     List<String> bookSeatCheck(BookCheck bookCheck);
+
+    RoomSeatShow bookSeatShow(Integer movieId);
 
     RoomType roomTypeCheck(BookCheck bookCheck);
 
