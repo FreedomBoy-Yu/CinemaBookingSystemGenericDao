@@ -5,10 +5,14 @@ import eddie.project.cinemabookingsystemgenericdao.dto.RoomType;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookCheck;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookStatusUpdate;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.OrderCount;
+import eddie.project.cinemabookingsystemgenericdao.dto.book.UserBookListView;
 import eddie.project.cinemabookingsystemgenericdao.entity.Book;
-
 import java.util.Date;
 import java.util.List;
+/*以下的iport是jpa關的page*/
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+/*到這裡*/
 
 public interface BookService {
     //create
@@ -43,10 +47,14 @@ public interface BookService {
     //update
     void updateBook(Book book);
 
-    String statusUpdate(BookStatusUpdate bookStatusUpdate);
+    String statusUpdate(Integer uid,BookStatusUpdate bookStatusUpdate);
 
     String seatChange(BookStatusUpdate bookStatusUpdate);
 
     //delete
     void deleteBook(Book book);
+
+    //
+    Page<UserBookListView> findBookByUserId(Integer userId, int page);
+
 }

@@ -72,7 +72,7 @@ public class BookServiceTest {
         statusUpdate.setId(1);
         statusUpdate.setStatus(1);
 
-        String result = bookService.statusUpdate(statusUpdate);
+        String result = bookService.statusUpdate(1,statusUpdate);
         System.out.println(result);
         assertTrue(result.contains("訂單已付款") || result.contains("訂單已取消"));
     }

@@ -3,14 +3,16 @@ package eddie.project.cinemabookingsystemgenericdao.controller;
 import eddie.project.cinemabookingsystemgenericdao.dto.RoomSeatShow;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookCheck;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookStatusUpdate;
+import eddie.project.cinemabookingsystemgenericdao.dto.book.UserBookListView;
 import eddie.project.cinemabookingsystemgenericdao.dto.movie.MovieDTO;
 import eddie.project.cinemabookingsystemgenericdao.dto.user.*;
 import eddie.project.cinemabookingsystemgenericdao.entity.Book;
 import eddie.project.cinemabookingsystemgenericdao.service.MovieService;
 import eddie.project.cinemabookingsystemgenericdao.service.UserService;
 import eddie.project.cinemabookingsystemgenericdao.service.BookService;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -21,7 +23,6 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/users")
 public class UserController {
-
     @Autowired
     private UserService userService;
     @Autowired
@@ -114,11 +115,23 @@ public class UserController {
         }
         return "預定失敗"; // 這行理論上不會執行，但保險起見可以加上
     }
-
-    @PutMapping("/paidorchancel")//付款或取消訂單
-    public String statusUpdate(@RequestHeader("Authorization") String token, @RequestBody BookStatusUpdate bookStatusUpdate) {
-        return bookService.statusUpdate(bookStatusUpdate);
+    /***************************JPA相關的controller************************************/
+    @GetMapping("/userbooklist2")
+    public Page<UserBookListView> getUserBooks(@RequestHeader("Authorization") String token,
+                                               @RequestParam(defaultValue = "0") int page) {
+        Integer userId = userService.jwtToUserId(token.replace("Bearer ", ""));
+        return bookService.findBookByUserId(userId, page);
     }
+    /*********************************************************************************/
+
+    @PutMapping("/statusupdate") // 付款或取消訂單
+    public ResponseEntity<String> statusUpdate(@RequestHeader("Authorization") String token,
+                                               @RequestBody BookStatusUpdate bookStatusUpdate) {
+        Integer userId = userService.jwtToUserId(token.replace("Bearer ", ""));// 解析 JWT 取得 userId
+        String result = bookService.statusUpdate(userId, bookStatusUpdate);
+        return ResponseEntity.ok(result); // 直接回傳成功訊息
+    }
+
 
     @PutMapping("/seatChange")//使用者更改自己的訂單
     public String bookupdate(@RequestHeader("Authorization") String token, @RequestBody BookStatusUpdate bookStatusUpdate) {
@@ -129,6 +142,7 @@ public class UserController {
         return bookService.bookSeatShow(movieId);
     }
 
-
 /*********************************************************************************/
+
+
 }

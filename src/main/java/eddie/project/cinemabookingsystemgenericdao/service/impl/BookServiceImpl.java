@@ -1,24 +1,32 @@
 package eddie.project.cinemabookingsystemgenericdao.service.impl;
 
 import eddie.project.cinemabookingsystemgenericdao.dao.BookDao;
+import eddie.project.cinemabookingsystemgenericdao.dao.BookRepository;
 import eddie.project.cinemabookingsystemgenericdao.dao.MovieDao;
 import eddie.project.cinemabookingsystemgenericdao.dto.RoomSeatShow;
 import eddie.project.cinemabookingsystemgenericdao.dto.RoomType;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookCheck;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookStatusUpdate;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.OrderCount;
+import eddie.project.cinemabookingsystemgenericdao.dto.book.UserBookListView;
 import eddie.project.cinemabookingsystemgenericdao.entity.Book;
 import eddie.project.cinemabookingsystemgenericdao.exception.CustomNotFoundException;
 import eddie.project.cinemabookingsystemgenericdao.exception.DatabaseException;
+import eddie.project.cinemabookingsystemgenericdao.exception.UnauthorizedException;
+import eddie.project.cinemabookingsystemgenericdao.mapper.BookMapper;
 import eddie.project.cinemabookingsystemgenericdao.service.BookService;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -27,6 +35,8 @@ public class BookServiceImpl implements BookService {
     private BookDao bookDao;
     @Autowired
     private MovieDao movieDao;
+    @Autowired
+    private BookRepository bookRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -97,11 +107,11 @@ public class BookServiceImpl implements BookService {
 
 
 
-/*
-* 一層樓是15個橫向座位，屬於大影廳
-* 二層樓是10個橫向座位，屬於中影聽
-* 三層樓是7個橫向座位,屬於小影廳
-* */
+    /*
+     * 一層樓是15個橫向座位，屬於大影廳
+     * 二層樓是10個橫向座位，屬於中影聽
+     * 三層樓是7個橫向座位,屬於小影廳
+    */
 
     @Override
     public RoomType roomTypeCheck(BookCheck bookCheck) {
@@ -173,30 +183,45 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String statusUpdate(BookStatusUpdate bookStatusUpdate) {
-        try {
-            Book book = Optional.ofNullable(bookDao.findById(bookStatusUpdate.getId()))
-                    .orElseThrow(() -> new CustomNotFoundException("找不到訂單 ID: " + bookStatusUpdate.getId()));
+    public String statusUpdate(Integer uid, BookStatusUpdate bookStatusUpdate) {
+        // 查詢訂單
+        Book book = bookDao.findById(bookStatusUpdate.getId());
+        // 檢查訂單是否存在
+        if (book == null) {
+            throw new CustomNotFoundException("找不到訂單 ID: " + bookStatusUpdate.getId());
+        }
 
-            book.setStatus(bookStatusUpdate.getStatus());
+        // 檢查該訂單是否屬於當前用戶
+        if (!book.getUserId().equals(uid)) {
+            throw new UnauthorizedException("你沒有權限修改此訂單");
+        }
+
+        // 更新訂單狀態
+        book.setStatus(bookStatusUpdate.getStatus());
+
+        // 只有付款時才設定付款時間
+        if (bookStatusUpdate.getStatus() == 1) {
             book.setPayTime(new Date());
+        } else if (bookStatusUpdate.getStatus() == 2) {
+            book.setPayTime(null); // 取消時清除付款時間
+        }
 
+        try {
+            book.setPayTime(new Date());
             bookDao.update(book);
-
-            return switch (bookStatusUpdate.getStatus()) {
-                case 1 -> "訂單已付款，付款時間：" + book.getPayTime();
-                case 2 -> "訂單已取消，取消時間：" + book.getPayTime();
-                default -> "未知狀態更新";
-            };
-
-        } catch (CustomNotFoundException e) {
-            return "更新失敗：" + e.getMessage();
         } catch (PersistenceException e) {
             throw new DatabaseException("資料庫錯誤，更新失敗", e);
-        } catch (Exception e) {
-            throw new RuntimeException("發生未知錯誤，更新失敗", e);
         }
+
+        // 回傳適當訊息
+        return switch (bookStatusUpdate.getStatus()) {
+            case 1 -> "訂單已付款，付款時間：" + book.getPayTime();
+            case 2 -> "訂單已取消";
+            default -> "未知狀態更新";
+        };
     }
+
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -233,5 +258,27 @@ public class BookServiceImpl implements BookService {
         } catch (PersistenceException e) {
             throw new DatabaseException("資料庫錯誤，刪除訂單失敗", e);
         }
+    }
+/************************************以下是JPA的方法************************************/
+    @Override
+    public Page<UserBookListView> findBookByUserId(Integer userId, int page) {
+        // 取得 Book 的分頁結果
+        PageRequest pageable = PageRequest.of(page, 10);
+        Page<Book> bookPage = bookRepository.findByUserId(userId, pageable);
+
+        // 轉換成 UserBookListView DTO
+        List<UserBookListView> dtoList = bookPage.getContent().stream()
+                .map(book -> new UserBookListView(
+                        book.getId(),
+                        book.getMovieId(),
+                        book.getSeatId(),
+                        book.getStatus(),
+                        book.getBookTime(),
+                        book.getPayTime()
+                ))
+                .collect(Collectors.toList());
+
+        // 用 DTO 建立新的分頁結果
+        return new PageImpl<>(dtoList, pageable, bookPage.getTotalElements());
     }
 }

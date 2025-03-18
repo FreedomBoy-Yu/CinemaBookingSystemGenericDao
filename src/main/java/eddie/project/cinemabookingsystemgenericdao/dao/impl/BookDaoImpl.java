@@ -1,7 +1,9 @@
 package eddie.project.cinemabookingsystemgenericdao.dao.impl;
 
 import eddie.project.cinemabookingsystemgenericdao.dao.BookDao;
+import eddie.project.cinemabookingsystemgenericdao.dao.BookRepository;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.OrderCount;
+import eddie.project.cinemabookingsystemgenericdao.dto.book.UserBookListView;
 import eddie.project.cinemabookingsystemgenericdao.entity.Book;
 import eddie.project.cinemabookingsystemgenericdao.mapper.BookMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class BookDaoImpl implements BookDao {
@@ -84,4 +87,6 @@ public class BookDaoImpl implements BookDao {
         bookmapper.deleteBook(id);
         //訂單紀錄不會刪除,只是不會顯示於使用者端
     }
+
+
 }
