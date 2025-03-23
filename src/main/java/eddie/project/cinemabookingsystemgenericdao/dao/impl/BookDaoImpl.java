@@ -9,6 +9,7 @@ import eddie.project.cinemabookingsystemgenericdao.mapper.BookMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,7 +29,6 @@ public class BookDaoImpl implements BookDao {
     //read
     @Override
     public Book findById(Integer id) {//test_ok
-        System.out.println(bookmapper.findById(id).getUserId());
         return bookmapper.findById(id);
     }
 
@@ -66,7 +66,7 @@ public class BookDaoImpl implements BookDao {
     }
 
     @Override
-    public List<OrderCount> findMovieOrderPaidCountTimeRange(Integer status, Date startDate, Date endDate){
+    public List<OrderCount> findMovieOrderPaidCountTimeRange(Integer status, LocalDate startDate, LocalDate endDate){
         return bookmapper.findMovieOrderPaidCountTimeRange(status, startDate, endDate);
     }
 

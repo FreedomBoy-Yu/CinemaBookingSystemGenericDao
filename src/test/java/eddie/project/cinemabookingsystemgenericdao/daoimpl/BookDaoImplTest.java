@@ -101,18 +101,18 @@ public class BookDaoImplTest {
         }
         System.out.println(OrderCountList.size());
     }
-    @Test
-    public void findMovieOrderPaidCountTimeRangeTest()throws ParseException{
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date startDate = formatter.parse("2025-02-10 19:08:23");
-
-        Date endDate = formatter.parse("2025-03-02 19:08:23");
-        List<OrderCount> OrderCountList = bookDao.findMovieOrderPaidCountTimeRange(2,startDate,endDate);
-        for (OrderCount OrderCount : OrderCountList) {
-            System.out.println("movie_id: " + OrderCount.getMovieId()+"\t"+"訂單數量:"+OrderCount.getOrderCount());
-        }
-        System.out.println(OrderCountList.size());
-    }
+//    @Test
+//    public void findMovieOrderPaidCountTimeRangeTest()throws ParseException{
+//        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        Date startDate = formatter.parse("2025-02-10 19:08:23");
+//
+//        Date endDate = formatter.parse("2025-03-02 19:08:23");
+//        List<OrderCount> OrderCountList = bookDao.findMovieOrderPaidCountTimeRange(2,startDate,endDate);
+//        for (OrderCount OrderCount : OrderCountList) {
+//            System.out.println("movie_id: " + OrderCount.getMovieId()+"\t"+"訂單數量:"+OrderCount.getOrderCount());
+//        }
+//        System.out.println(OrderCountList.size());
+//    }
     @Test
     public void BookSeatCheckTest(){
         bookDao.bookSeatCheck(3).forEach(System.out::println);

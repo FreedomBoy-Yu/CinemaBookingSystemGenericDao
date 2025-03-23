@@ -5,15 +5,14 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/reports")
 public class JasperReportController {
 
@@ -26,7 +25,7 @@ public class JasperReportController {
     /**
      * 📌 下載「所有書籍」報表
      */
-    @GetMapping("/download/allbook")
+    @GetMapping("/download/allbook")//done
     public ResponseEntity<byte[]> downloadAllBookReport() {
         return generateReportResponse("allbook", new HashMap<>());
     }
@@ -34,7 +33,7 @@ public class JasperReportController {
     /**
      * 📌 下載「特定狀態書籍」報表（`status` 是數字類型）
      */
-    @GetMapping("/download/statusbook")
+    @GetMapping("/download/statusbook")//被取代了
     public ResponseEntity<byte[]> downloadStatusBookReport(@RequestParam Integer status) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("status", status); // 參數傳遞給 JasperReports
@@ -54,7 +53,7 @@ public class JasperReportController {
         return generateReportResponse("daterange", parameters);
     }
     //findBookByMovieId
-    @GetMapping("/download/findBookBymovieId")
+    @GetMapping("/download/findBookBymovieId")//done
     public ResponseEntity<byte[]> downloadFindBookBymovieId(
             @RequestParam("movieId")Integer movieId)
     {
@@ -68,27 +67,36 @@ public class JasperReportController {
         parameters.put("paid", paid);
         return generateReportResponse("findBookPaidCountByUser", parameters);
     }
-    @GetMapping("/download/findMovieOrderCount")
-    public ResponseEntity<byte[]> downloadFindMovieOrderCount() {
+    @GetMapping("/download/MovieOrderCount")
+    public ResponseEntity<byte[]> downloadFindMovieOrderCount() {//done
         HashMap<String, Object> parameters = new HashMap<>();
         return generateReportResponse("findMovieOrderCount", parameters);
     }
 
-    @GetMapping("/download/findMovieOrderStatusCount")
+    @GetMapping("/download/findMovieOrderStatusCount")//被取代了
     public ResponseEntity<byte[]> downloadFindMovieOrderStatusCount(@RequestParam Integer status) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("status", status);
         return generateReportResponse("findMovieOrderStatusCount", parameters);
     }
     @GetMapping("/download/findMovieOrderPaidCountTimeRange")
-    public ResponseEntity<byte[]> downloadFindMovieOrderPaidCountTimeRange(
+    public ResponseEntity<byte[]> downloadFindMovieOrderPaidCountTimeRange(//done
             @RequestParam Integer status,
-            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
-            @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
+            @RequestParam(value = "startDate", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(value = "endDate", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate)
+    {
+        if (startDate == null) {
+            startDate = LocalDate.of(1999, 1, 1);
+        }
+        if (endDate == null) {
+            endDate = LocalDate.now();
+        }
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("status", status);
-        parameters.put("startDate", new java.sql.Date(startDate.getTime()));
-        parameters.put("endDate", new java.sql.Date(endDate.getTime()));
+        parameters.put("startDate", java.sql.Date.valueOf(startDate));
+        parameters.put("endDate", java.sql.Date.valueOf(endDate));
         return generateReportResponse("findMovieOrderStatusCountTimeRange", parameters);
     }
     /**

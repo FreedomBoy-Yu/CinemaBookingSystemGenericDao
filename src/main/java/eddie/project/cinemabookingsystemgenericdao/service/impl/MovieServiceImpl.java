@@ -81,17 +81,43 @@ public class MovieServiceImpl implements MovieService {
     }
     /*以下方法是GPT建議的做法*/
 
-    @Override
-    public void updateMovie(MovieDTO movieDTO) {
-        Movie movie = new Movie();
-        movie.setId(movieDTO.getId());
-        movie.setMovieName(movieDTO.getMovieName());
-        movie.setRoomWay(movieDTO.getRoomWay());
-        movie.setBookAble(movieDTO.getBookAble());
-        try {
-            movieDao.update(movie);
-        }catch(PersistenceException e){
-            throw new DatabaseException("資料庫錯誤，更新電影失敗", e);
+//    @Override
+//    public void updateMovie(MovieDTO movieDTO) {
+//        Movie movie = new Movie();
+//        movie.setId(movieDTO.getId());
+//        movie.setMovieName(movieDTO.getMovieName());
+//        movie.setRoomWay(movieDTO.getRoomWay());
+//        movie.setBookAble(movieDTO.getBookAble());
+//        try {
+//            movieDao.update(movie);
+//        }catch(PersistenceException e){
+//            throw new DatabaseException("資料庫錯誤，更新電影失敗", e);
+//        }
+//    }
+@Override
+public void updateMovie(MovieDTO movieDTO) {
+    try {
+        // 1️⃣ 先從資料庫查詢現有的電影
+        Movie existingMovie = movieDao.findById(movieDTO.getId());
+
+        // 2️⃣ 只更新有提供的欄位，沒有提供的欄位保持不變
+        if (movieDTO.getMovieName() != null) {
+            existingMovie.setMovieName(movieDTO.getMovieName());
         }
+        if (movieDTO.getRoomWay() != null) {
+            existingMovie.setRoomWay(movieDTO.getRoomWay());
+        }
+        if (movieDTO.getBookAble() != null) {
+            existingMovie.setBookAble(movieDTO.getBookAble());
+        }
+
+        // 3️⃣ 更新資料庫
+        movieDao.update(existingMovie);
+    } catch (PersistenceException e) {
+        throw new DatabaseException("資料庫錯誤，更新電影失敗", e);
     }
+}
+
+
+
 }

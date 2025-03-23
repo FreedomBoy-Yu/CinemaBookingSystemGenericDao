@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +57,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<Book> findAll() {
+
         return bookDao.findAll();
     }
 
@@ -95,7 +97,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<OrderCount> findMovieOrderPaidCountTimeRange(Integer status, Date startDate, Date endDate) {
+    public List<OrderCount> findMovieOrderPaidCountTimeRange(Integer status, LocalDate startDate, LocalDate endDate) {
         return bookDao.findMovieOrderPaidCountTimeRange(status, startDate, endDate);
     }
 
@@ -108,9 +110,9 @@ public class BookServiceImpl implements BookService {
 
 
     /*
-     * 一層樓是15個橫向座位，屬於大影廳
-     * 二層樓是10個橫向座位，屬於中影聽
-     * 三層樓是7個橫向座位,屬於小影廳
+     * 一層樓是15個橫向座位，屬於大影廳，該層有六個影廳
+     * 二層樓是10個橫向座位，屬於中影聽，該層有十個影廳
+     * 三層樓是7個橫向座位，屬於小影廳，該層有15個影廳
     */
 
     @Override
@@ -182,7 +184,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)//支付功能並不會在這邊，將額外做出一個Paid相關的Service來實現，來模擬實際上的支付功能
     public String statusUpdate(Integer uid, BookStatusUpdate bookStatusUpdate) {
         // 查詢訂單
         Book book = bookDao.findById(bookStatusUpdate.getId());
@@ -280,5 +282,31 @@ public class BookServiceImpl implements BookService {
 
         // 用 DTO 建立新的分頁結果
         return new PageImpl<>(dtoList, pageable, bookPage.getTotalElements());
+    }
+    /*************支付訂單確認******/
+    @Override
+    public UserBookListView findBookById(Integer UID,Integer bookId) {
+        try{
+            Book book=bookDao.findById(bookId);
+            if(book.getUserId().equals(UID)){
+                UserBookListView userBookListView=new UserBookListView();
+                userBookListView.setMovieId(book.getMovieId());
+                userBookListView.setSeatId(book.getSeatId());
+                userBookListView.setStatus(book.getStatus());
+                userBookListView.setBookTime(book.getBookTime());
+                if(userBookListView.getStatus()==1){
+                    throw new Exception("訂單已付款");
+                }
+                return userBookListView;
+
+
+            }else{
+                throw new UnauthorizedException("你沒有權限");
+            }
+        }catch(Exception e){
+            throw new CustomNotFoundException("找不到訂單");
+        }
+
+
     }
 }

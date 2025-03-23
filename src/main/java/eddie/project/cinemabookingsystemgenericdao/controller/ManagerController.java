@@ -11,10 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/manager")
 public class ManagerController {
     @Autowired
@@ -61,17 +63,12 @@ public class ManagerController {
     /***********************************************從這裡****************************************/
 
 
-    @GetMapping("/findAllBook")
+    @GetMapping("/findAllBook")//done
     public List<Book> findAllBook() {
         return bookService.findAll();
     }
 
-    @GetMapping("/findbookbyuserid") // 從後台尋找使用者的訂單資訊
-    public List<Book> findBookByUserId(@RequestParam("id") Integer id) {
-        return bookService.findBookByUserId(id);
-    }
-
-    @GetMapping("/status") // 從訂單狀態來查詢電影訂單
+    @GetMapping("/status") //被其他功能取代了
     public List<Book> findByPaidStatus(@RequestParam("status") Integer status) {
         return bookService.findByPaidStatus(status);
     }
@@ -85,7 +82,7 @@ public class ManagerController {
     }
 
     @GetMapping("/movieId") // 從電影 id 查詢訂單數量
-    public List<Book> findBooksByMovieId(@RequestParam("movieid") Integer movieid) {
+    public List<Book> findBooksByMovieId(@RequestParam("movieid") Integer movieid) {//done
         return bookService.findBooksByMovieId(movieid);
     }
 
@@ -95,7 +92,7 @@ public class ManagerController {
     }
 
     @GetMapping("/movieorder") // 從電影排序訂單數量，只顯示數量不顯示其他資訊
-    public List<OrderCount> findMovieOrderCount() {
+    public List<OrderCount> findMovieOrderCount() {//done
         return bookService.findMovieOrderCount();
     }
 
@@ -105,14 +102,25 @@ public class ManagerController {
     }
 
     @GetMapping("/paiddaterange") // 用電影的 id 排序已付款的訂單，並設置排序的時間日期
-    public List<OrderCount> findMovieOrderPaidCountTimeRange(
+    public List<OrderCount> findMovieOrderPaidCountTimeRange(//done
             @RequestParam("paid") Integer paid,
-            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
-            @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate
+            @RequestParam(value = "startDate", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(value = "endDate", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate
     ) {
+        if (startDate == null) {
+            startDate = LocalDate.of(1999, 1, 1);
+        }
+        if (endDate == null) {
+            endDate = LocalDate.now();
+        }
         return bookService.findMovieOrderPaidCountTimeRange(paid, startDate, endDate);
     }
-
+    @GetMapping("/findbookbyuserid") // 從後台尋找使用者的訂單資訊
+    public List<Book> findBookByUserId(@RequestParam("id") Integer id) {
+        return bookService.findBookByUserId(id);
+    }
 
     /***********************************************到這裡是Booking相關的設置的controller***********/
 }

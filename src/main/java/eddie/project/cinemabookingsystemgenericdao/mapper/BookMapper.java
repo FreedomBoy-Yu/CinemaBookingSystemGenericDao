@@ -5,6 +5,7 @@ import eddie.project.cinemabookingsystemgenericdao.entity.Book;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public interface BookMapper {
     List<OrderCount> findBookPaidCountByUser(Integer status);//讓資料以 UserOrderCount 模式，根據 status 排序
     List<OrderCount> findMovieOrderCount();//從電影排序訂單數量
     List<OrderCount> findMovieOrderPaidCount(Integer status);//從是否有付款的數量排序
-    List<OrderCount> findMovieOrderPaidCountTimeRange(Integer status, Date startDate, Date endDate);
+    List<OrderCount> findMovieOrderPaidCountTimeRange(Integer status, LocalDate startDate, LocalDate endDate);
     List<String> bookSeatCheck(Integer movieId);
     //update
     void updateBook(Book book);

@@ -60,6 +60,8 @@ public class UserController {
     public String login(@RequestBody UserLoginDTO userLoginDto) {
         return userService.login(userLoginDto);
     }
+
+
     @GetMapping("/userinfo")
     public UserInfo viewUserInfo(@RequestHeader("Authorization") String token) {
         if (token == null || !token.startsWith("Bearer ")) {
@@ -122,12 +124,20 @@ public class UserController {
         Integer userId = userService.jwtToUserId(token.replace("Bearer ", ""));
         return bookService.findBookByUserId(userId, page);
     }
+    @GetMapping("/paidBookCheck/{bookId}")
+    public UserBookListView getPaidBookCheck(@RequestHeader("Authorization") String token,@PathVariable Integer bookId) {
+        Integer userId = userService.jwtToUserId(token.replace("Bearer ", ""));
+        return bookService.findBookById(userId,bookId);
+
+    }
+
     /*********************************************************************************/
 
-    @PutMapping("/statusupdate") // 付款或取消訂單
+    @PutMapping("/cancelupdate") //取消訂單
     public ResponseEntity<String> statusUpdate(@RequestHeader("Authorization") String token,
                                                @RequestBody BookStatusUpdate bookStatusUpdate) {
         Integer userId = userService.jwtToUserId(token.replace("Bearer ", ""));// 解析 JWT 取得 userId
+        bookStatusUpdate.setStatus(2);//避免從前端繞過支付功能用取消的方式來欺騙系統付款
         String result = bookService.statusUpdate(userId, bookStatusUpdate);
         return ResponseEntity.ok(result); // 直接回傳成功訊息
     }

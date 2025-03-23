@@ -7,6 +7,8 @@ import eddie.project.cinemabookingsystemgenericdao.dto.book.BookStatusUpdate;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.OrderCount;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.UserBookListView;
 import eddie.project.cinemabookingsystemgenericdao.entity.Book;
+
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 /*以下的iport是jpa關的page*/
@@ -35,7 +37,7 @@ public interface BookService {
     //已生成jaserreport報表
     List<OrderCount> findMovieOrderPaidCount(Integer paid);//用電影的id排序已付款的訂單
 
-    List<OrderCount> findMovieOrderPaidCountTimeRange(Integer paid,Date startDate, Date endDate);//用電影的id排序已付款的訂單，並設置排序的時間日期
+    List<OrderCount> findMovieOrderPaidCountTimeRange(Integer paid, LocalDate startDate, LocalDate endDate);//用電影的id排序已付款的訂單，並設置排序的時間日期
 
     List<String> bookSeatCheck(BookCheck bookCheck);
 
@@ -56,5 +58,7 @@ public interface BookService {
 
     //
     Page<UserBookListView> findBookByUserId(Integer userId, int page);
+
+    UserBookListView findBookById(Integer UID,Integer bookId);
 
 }
