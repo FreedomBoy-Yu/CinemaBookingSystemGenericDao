@@ -1,5 +1,6 @@
 package eddie.project.cinemabookingsystemgenericdao.controller;
 
+import eddie.project.cinemabookingsystemgenericdao.annotation.RequiresRole;
 import eddie.project.cinemabookingsystemgenericdao.dto.RoomSeatShow;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookCheck;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookStatusUpdate;
@@ -32,11 +33,12 @@ public class UserController {
 
     @PostMapping("/add")
     public void addUser(@RequestBody UserSignInDTO userSignInDTO) {
-        userSignInDTO.setRole(0);
+        userSignInDTO.setRole(1); // 設置為一般使用者
         userService.insertUser(userSignInDTO);
     }
 
     @PutMapping("/update")
+    @RequiresRole({0, 1, 2, 3}) // 所有角色都可以更新自己的個人資料
     public void update(@RequestHeader("Authorization") String token, @RequestBody UserUpdateDTO userUpdateDTO) {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid Authorization header");
@@ -44,10 +46,11 @@ public class UserController {
         String jwtToken = token.substring(7);
         UserJwtResponseDTO userJwtResponseDTO = userService.jwtTest(jwtToken);
         userUpdateDTO.setId(userJwtResponseDTO.getId());
-        userUpdateDTO.setRole(userJwtResponseDTO.getRole());
+        userUpdateDTO.setRole(userJwtResponseDTO.getRole()); // 保留原始角色，防止用戶自己提升權限
         userService.updateUser(userUpdateDTO);
     }
     @PutMapping("/changepd")
+    @RequiresRole({0, 1, 2, 3}) // 所有角色都可以更改自己的密碼
     public void changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordDTO changePasswordDTO) {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid Authorization header");
@@ -63,6 +66,7 @@ public class UserController {
 
 
     @GetMapping("/userinfo")
+    @RequiresRole({0, 1, 2, 3}) // 所有角色都可以查看自己的個人資料
     public UserInfo viewUserInfo(@RequestHeader("Authorization") String token) {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid Authorization header");
@@ -73,6 +77,7 @@ public class UserController {
     }
 
     @PostMapping("/jwttest")//測試完成後應該刪除這個功能
+    @RequiresRole({0}) // 只有最高權限管理員可以測試 JWT
     public UserJwtResponseDTO jwtTest(@RequestHeader("Authorization") String token) {
         return userService.jwtTest(token.replace("Bearer ", ""));
     }
