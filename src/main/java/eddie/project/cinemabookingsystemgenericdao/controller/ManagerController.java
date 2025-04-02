@@ -1,5 +1,6 @@
 package eddie.project.cinemabookingsystemgenericdao.controller;
 
+import eddie.project.cinemabookingsystemgenericdao.annotation.RequiresRole;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.OrderCount;
 import eddie.project.cinemabookingsystemgenericdao.dto.movie.MovieDTO;
 import eddie.project.cinemabookingsystemgenericdao.entity.Book;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/manager")
+@RequiresRole({0, 3}) // 只有最高權限管理員和管理員可以使用管理功能
 public class ManagerController {
     @Autowired
     private UserService userService;
@@ -28,6 +30,7 @@ public class ManagerController {
 
     /***********************************************從這裡****************************************/
     @GetMapping("/users/allUserView")
+
     public List<User> getAllUsers() {
         return userService.findAll();
     }
@@ -38,6 +41,7 @@ public class ManagerController {
     }
 
     @DeleteMapping("/users/delete/{id}")
+    @RequiresRole({0}) // 只有最高權限管理員可以刪除用戶
     public void deleteUser(@PathVariable Integer id) {
         userService.deleteById(id);
     }
