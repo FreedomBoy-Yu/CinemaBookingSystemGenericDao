@@ -1,5 +1,6 @@
 package eddie.project.cinemabookingsystemgenericdao.controller;
 
+import eddie.project.cinemabookingsystemgenericdao.annotation.OperationLog;
 import eddie.project.cinemabookingsystemgenericdao.annotation.RequiresRole;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.OrderCount;
 import eddie.project.cinemabookingsystemgenericdao.dto.movie.MovieDTO;
@@ -42,6 +43,7 @@ public class ManagerController {
 
     @DeleteMapping("/users/delete/{id}")
     @RequiresRole({0}) // 只有最高權限管理員可以刪除用戶
+    @OperationLog(module = "用戶管理", operationType = "刪除", description = "管理員刪除用戶") // claude撰寫:
     public void deleteUser(@PathVariable Integer id) {
         userService.deleteById(id);
     }
@@ -50,11 +52,13 @@ public class ManagerController {
     /***********************************************從這裡****************************************/
 
     @PostMapping("/movies/add")//增加一個新電影
+    @OperationLog(module = "電影管理", operationType = "新增", description = "管理員新增電影") // claude撰寫:
     public void addMovie(@RequestBody MovieDTO movieDTO) {
         movieService.insertMovie(movieDTO);
     }
 
     @PutMapping("/movies/update")//修改電影資訊
+    @OperationLog(module = "電影管理", operationType = "更新", description = "管理員更新電影資訊") // claude撰寫:
     public void updateMovie(@RequestBody MovieDTO movieDTO) {
         movieService.updateMovie(movieDTO);
     }

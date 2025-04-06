@@ -1,5 +1,6 @@
 package eddie.project.cinemabookingsystemgenericdao.controller;
 
+import eddie.project.cinemabookingsystemgenericdao.annotation.OperationLog;
 import eddie.project.cinemabookingsystemgenericdao.annotation.RequiresRole;
 import eddie.project.cinemabookingsystemgenericdao.dto.RoomSeatShow;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookCheck;
@@ -32,6 +33,7 @@ public class UserController {
     private BookService bookService;
 
     @PostMapping("/add")
+    @OperationLog(module = "用戶管理", operationType = "註冊", description = "新用戶註冊") // claude撰寫:
     public void addUser(@RequestBody UserSignInDTO userSignInDTO) {
         userSignInDTO.setRole(1); // 設置為一般使用者
         userService.insertUser(userSignInDTO);
@@ -39,6 +41,7 @@ public class UserController {
 
     @PutMapping("/update")
     @RequiresRole({0, 1, 2, 3}) // 所有角色都可以更新自己的個人資料
+    @OperationLog(module = "用戶管理", operationType = "更新", description = "用戶更新個人資料") // claude撰寫:
     public void update(@RequestHeader("Authorization") String token, @RequestBody UserUpdateDTO userUpdateDTO) {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid Authorization header");
@@ -60,6 +63,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
+    @OperationLog(module = "用戶管理", operationType = "登入", description = "用戶登入系統") // claude撰寫:
     public String login(@RequestBody UserLoginDTO userLoginDto) {
         return userService.login(userLoginDto);
     }
@@ -109,6 +113,7 @@ public class UserController {
 
 
     @PostMapping("/userInsertBook")//使用者增加訂單
+    @OperationLog(module = "訂票管理", operationType = "新增", description = "用戶新增訂票訂單") // claude撰寫:
     public String bookCheck(@RequestHeader("Authorization") String token, @RequestBody BookCheck bookCheck) {
         try {
             Integer id = userService.jwtToUserId(token.replace("Bearer ", ""));
