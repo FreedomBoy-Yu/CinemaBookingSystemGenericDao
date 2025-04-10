@@ -1,5 +1,7 @@
 package eddie.project.cinemabookingsystemgenericdao.controller;
 
+import eddie.project.cinemabookingsystemgenericdao.annotation.OperationLog;
+import eddie.project.cinemabookingsystemgenericdao.annotation.RequiresRole;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.OrderCount;
 import eddie.project.cinemabookingsystemgenericdao.dto.movie.MovieDTO;
 import eddie.project.cinemabookingsystemgenericdao.entity.Book;
@@ -18,6 +20,7 @@ import java.util.List;
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/manager")
+@RequiresRole({0, 3}) // 只有最高權限管理員和管理員可以使用管理功能
 public class ManagerController {
     @Autowired
     private UserService userService;
@@ -28,6 +31,7 @@ public class ManagerController {
 
     /***********************************************從這裡****************************************/
     @GetMapping("/users/allUserView")
+
     public List<User> getAllUsers() {
         return userService.findAll();
     }
@@ -38,6 +42,8 @@ public class ManagerController {
     }
 
     @DeleteMapping("/users/delete/{id}")
+    @RequiresRole({0}) // 只有最高權限管理員可以刪除用戶
+    @OperationLog(module = "用戶管理", operationType = "刪除", description = "管理員刪除用戶") // claude撰寫:
     public void deleteUser(@PathVariable Integer id) {
         userService.deleteById(id);
     }
@@ -46,11 +52,13 @@ public class ManagerController {
     /***********************************************從這裡****************************************/
 
     @PostMapping("/movies/add")//增加一個新電影
+    @OperationLog(module = "電影管理", operationType = "新增", description = "管理員新增電影") // claude撰寫:
     public void addMovie(@RequestBody MovieDTO movieDTO) {
         movieService.insertMovie(movieDTO);
     }
 
     @PutMapping("/movies/update")//修改電影資訊
+    @OperationLog(module = "電影管理", operationType = "更新", description = "管理員更新電影資訊") // claude撰寫:
     public void updateMovie(@RequestBody MovieDTO movieDTO) {
         movieService.updateMovie(movieDTO);
     }

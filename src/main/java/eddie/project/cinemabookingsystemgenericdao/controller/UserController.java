@@ -1,5 +1,7 @@
 package eddie.project.cinemabookingsystemgenericdao.controller;
 
+import eddie.project.cinemabookingsystemgenericdao.annotation.OperationLog;
+import eddie.project.cinemabookingsystemgenericdao.annotation.RequiresRole;
 import eddie.project.cinemabookingsystemgenericdao.dto.RoomSeatShow;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookCheck;
 import eddie.project.cinemabookingsystemgenericdao.dto.book.BookStatusUpdate;
@@ -31,12 +33,15 @@ public class UserController {
     private BookService bookService;
 
     @PostMapping("/add")
+    @OperationLog(module = "用戶管理", operationType = "註冊", description = "新用戶註冊") // claude撰寫:
     public void addUser(@RequestBody UserSignInDTO userSignInDTO) {
-        userSignInDTO.setRole(0);
+        userSignInDTO.setRole(1); // 設置為一般使用者
         userService.insertUser(userSignInDTO);
     }
 
     @PutMapping("/update")
+    @RequiresRole({0, 1, 2, 3}) // 所有角色都可以更新自己的個人資料
+    @OperationLog(module = "用戶管理", operationType = "更新", description = "用戶更新個人資料") // claude撰寫:
     public void update(@RequestHeader("Authorization") String token, @RequestBody UserUpdateDTO userUpdateDTO) {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid Authorization header");
@@ -44,10 +49,11 @@ public class UserController {
         String jwtToken = token.substring(7);
         UserJwtResponseDTO userJwtResponseDTO = userService.jwtTest(jwtToken);
         userUpdateDTO.setId(userJwtResponseDTO.getId());
-        userUpdateDTO.setRole(userJwtResponseDTO.getRole());
+        userUpdateDTO.setRole(userJwtResponseDTO.getRole()); // 保留原始角色，防止用戶自己提升權限
         userService.updateUser(userUpdateDTO);
     }
     @PutMapping("/changepd")
+    @RequiresRole({0, 1, 2, 3}) // 所有角色都可以更改自己的密碼
     public void changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordDTO changePasswordDTO) {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid Authorization header");
@@ -57,12 +63,14 @@ public class UserController {
     }
 
     @PostMapping("/login")
+    @OperationLog(module = "用戶管理", operationType = "登入", description = "用戶登入系統") // claude撰寫:
     public String login(@RequestBody UserLoginDTO userLoginDto) {
         return userService.login(userLoginDto);
     }
 
 
     @GetMapping("/userinfo")
+    @RequiresRole({0, 1, 2, 3}) // 所有角色都可以查看自己的個人資料
     public UserInfo viewUserInfo(@RequestHeader("Authorization") String token) {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid Authorization header");
@@ -73,6 +81,7 @@ public class UserController {
     }
 
     @PostMapping("/jwttest")//測試完成後應該刪除這個功能
+    @RequiresRole({0}) // 只有最高權限管理員可以測試 JWT
     public UserJwtResponseDTO jwtTest(@RequestHeader("Authorization") String token) {
         return userService.jwtTest(token.replace("Bearer ", ""));
     }
@@ -104,6 +113,7 @@ public class UserController {
 
 
     @PostMapping("/userInsertBook")//使用者增加訂單
+    @OperationLog(module = "訂票管理", operationType = "新增", description = "用戶新增訂票訂單") // claude撰寫:
     public String bookCheck(@RequestHeader("Authorization") String token, @RequestBody BookCheck bookCheck) {
         try {
             Integer id = userService.jwtToUserId(token.replace("Bearer ", ""));
